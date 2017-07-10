@@ -1,0 +1,69 @@
+/*
+
+.node circle {
+  cursor: pointer;
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+.node-label {
+  font-size: 12px;
+  padding: 3px 5px;
+  display: inline-block;
+  word-wrap: break-word;
+  max-width: 160px;
+  background: #d0dee7;
+  border-radius: 5px;
+}
+
+.node a:hover {
+  cursor: pointer;
+}
+
+.node a {
+  font-size: 10px;
+  margin-left: 5px
+}
+
+a.node-remove {
+  color: red;
+}
+input+.node-text {
+  margin-left: 5px;
+}
+.node-label.node-type1 {
+  background: coral;
+}
+.node-label.node-type2 {
+  background: lightblue;
+}
+.node-label.node-type3 {
+  background: yellow;
+}
+.node-label.disabled {
+  background: #e9e9e9;
+  color: #838383
+}
+.node text {
+  font-size: 11px;
+}
+
+path.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1.5px;
+}
+*/
+
+.highlight-link{
+  fill: #ff4136;
+  stroke: #ff4136;
+}
+.highlight-link-stroke-active{
+  stroke:#ff4136;
+}
+.highlight-link-stroke-inactive{
+  stroke:steelblue;
+}
+

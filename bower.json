@@ -1,0 +1,22 @@
+{
+  "name": "orgchart",
+  "authors": [
+    "Gayan Prasanna <gayan@infoseek.lk>"
+  ],
+  "description": "Interactive org-chart plugin module which was developed using D3 svg library",
+  "main": "./directives/treeview.directive.js",
+  "keywords": [
+    "angular",
+    "orgchart",
+    "hierarchy-tree"
+  ],
+  "license": "MIT",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
