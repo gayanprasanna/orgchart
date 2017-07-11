@@ -13,7 +13,7 @@
             replace: false,
             // require:'^cascadeTreeView',
             controller: CascadeTreeNodeController,
-            templateUrl: 'app/cascade/test/orgchart/directives/treenode.tmpl.html',
+            templateUrl: 'treenode.tmpl.html',
             controllerAs: 'vm',
             scope: {},
             bindToController: {

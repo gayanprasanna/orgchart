@@ -14,7 +14,7 @@
             restrict: 'EA',
             controller: cascadeToolSetController,
             controllerAs: 'vm',
-            templateUrl: 'app/cascade/test/orgchart/directives/toolset.tmpl.html',
+            templateUrl: 'toolset.tmpl.html',
             scope: {},
             bindToController: {},
             link: link

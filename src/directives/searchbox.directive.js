@@ -13,7 +13,7 @@
             replace: false,
             restrict: 'EA',
             controller: CascadeTreeSearchBoxController,
-            templateUrl: 'app/cascade/test/orgchart/directives/searchbox.tmpl.html',
+            templateUrl: 'searchbox.tmpl.html',
             controllerAs: 'vm',
             scope: {},
             bindToController: {},
