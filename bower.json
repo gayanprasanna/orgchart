@@ -4,7 +4,7 @@
     "Gayan Prasanna <gayan@infoseek.lk>"
   ],
   "description": "Interactive org-chart plugin module which was developed using D3 svg library",
-  "main": "./directives/treeview.directive.js",
+  "main": "./orgchart.module.js",
   "keywords": [
     "angular",
     "orgchart",
