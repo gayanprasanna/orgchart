@@ -1,0 +1,32 @@
+{
+  "name": "orgchart",
+  "version": "1.0.0-rc0",
+  "description": "A org chart hierarchy module written in angularjs",
+  "main": "orgchart.module.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gayanprasanna/orgchart.git"
+  },
+  "keywords": [
+    "orgchart"
+  ],
+  "author": "Gayan Prasanna <gayan@infoseek.lk>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gayanprasanna/orgchart/issues"
+  },
+  "homepage": "https://github.com/gayanprasanna/orgchart#readme",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-csso": "^3.0.0",
+    "gulp-jshint": "^2.0.4",
+    "gulp-sass": "^3.1.0",
+    "gulp-sourcemaps": "^2.6.0",
+    "gulp-util": "^3.0.8",
+    "jshint": "^2.9.5",
+    "jshint-stylish": "^2.2.1"
+  }
+}
