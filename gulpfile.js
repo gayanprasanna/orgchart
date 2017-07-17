@@ -55,7 +55,9 @@ gulp.task('build-js',function () {
     return gulp.src('src/**/*.js')
         .pipe(sourcemaps.init())
         .pipe(concat('bundle.js'))
-        .pipe(configuration.production?uglify():gulpUtil.noop())
+        .pipe(configuration.production?uglify().on('error', function(e){
+            console.log(e);
+        }):gulpUtil.noop())
         .pipe(sourcemaps.write())
         .pipe(gulp.dest('dist/js'))
 });

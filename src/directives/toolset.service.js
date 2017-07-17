@@ -10,7 +10,7 @@
     function toolSetService() {
 
         var isAllExpandedMode = false;
-        const LOWEST_ZOOM_SCALE = 1;
+        var LOWEST_ZOOM_SCALE = 1;
         var zoomScale = LOWEST_ZOOM_SCALE;
 
         return {
