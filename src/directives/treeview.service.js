@@ -14,6 +14,7 @@
             setSearchedNode: setSearchedNode,
             getSearchedNode: getSearchedNode,
             setNodes: setNodes,
+            pushNode: pushNode,
             getNodes: getNodes,
             findById: findById
         };
@@ -21,7 +22,7 @@
         return serviceExposable;
 
         function findById(id) {
-            var treeNode = $filter('filter')(nodes, {'id': id},true)[0];
+            var treeNode = $filter('filter')(nodes, {'id': id}, true)[0];
             return treeNode;
         }
 
@@ -31,6 +32,10 @@
 
         function getNodes() {
             return nodes;
+        }
+
+        function pushNode(node) {
+            nodes.push(node);
         }
 
         function setSearchedNode(node) {

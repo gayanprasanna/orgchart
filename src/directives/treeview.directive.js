@@ -367,7 +367,10 @@
                  console.log("dragged");
                  }))*/;
 
-                nodeText.append("cascade-tree-node").attr("nodeId", function (d) {
+                nodeText.append("cascade-tree-node").attr("node",function (d) {
+                    treeViewService.pushNode(d);
+                    return "";
+                }).attr("nodeId", function (d) {
                     return d.id;
                 }).attr("isPinnedNode", "false").attr("nodeActions", attrs.nodeactions)
                     .each(function () {
@@ -519,10 +522,10 @@
                     d.x0 = d.x;
                     d.y0 = d.y;
                 });
-
+/*
                 angular.copy(nodes, nodeList);
 
-                treeViewService.setNodes(nodeList);
+                treeViewService.setNodes(nodeList);*/
             }
 
 // Toggle children

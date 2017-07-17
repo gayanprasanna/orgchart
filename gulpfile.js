@@ -10,6 +10,7 @@ var sass = require('gulp-sass');
 var sourcemaps = require('gulp-sourcemaps');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
+var ngAnnotate = require('gulp-ng-annotate');
 var csso = require('gulp-csso');
 
 var configuration = {
@@ -55,6 +56,7 @@ gulp.task('build-js',function () {
     return gulp.src('src/**/*.js')
         .pipe(sourcemaps.init())
         .pipe(concat('bundle.js'))
+        .pipe(ngAnnotate())
         .pipe(configuration.production?uglify().on('error', function(e){
             console.log(e);
         }):gulpUtil.noop())

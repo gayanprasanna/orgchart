@@ -33,6 +33,8 @@
             console.log(vm.nodeActions);
             vm.isPinnedNode = false;
             vm.node = treeViewService.findById(attrs.nodeid);
+            /*console.log(angular.fromJson(attrs.node));
+            vm.node = angular.fromJson(attrs.node);*/
             vm.nodeClass = 'node-label node-' + vm.node.type+ ' node-'+vm.id;
 
             // vm.isPinnedNode = true;
