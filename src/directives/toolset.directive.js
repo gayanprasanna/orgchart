@@ -14,7 +14,8 @@
             restrict: 'EA',
             controller: cascadeToolSetController,
             controllerAs: 'vm',
-            templateUrl: 'toolset.tmpl.html',
+            // templateUrl: 'toolset.tmpl.html',
+            template:'<div layout="column" layout-align="center end"> <div layout="row" layout-align="space-around center" style="margin-top: 20px" flex-offset="5"> <div> <md-button class="md-icon-button" ng-click="vm.incrementZoomScale()"> <md-tooltip md-direction="bottom">Zoom In</md-tooltip> <md-icon md-font-icon="zmdi zmdi-plus"></md-icon></md-button> </div><div> <md-button class="md-icon-button" ng-click="vm.decrementZoomScale()" ng-disabled="vm.zoomScale<=1"> <md-tooltip md-direction="bottom">Zoom Out</md-tooltip> <md-icon md-font-icon="zmdi zmdi-minus"></md-icon></md-button> </div><div> <md-button class="md-icon-button" ng-hide="vm.isExpandAllMode" ng-click="vm.toggleExpandAllMode()"> <md-tooltip md-direction="bottom">Expand All</md-tooltip> <md-icon md-font-icon="zmdi zmdi-triangle-down"></md-icon></md-button> </div><div> <md-button class="md-icon-button" ng-show="vm.isExpandAllMode" ng-click="vm.toggleExpandAllMode()"> <md-tooltip md-direction="bottom">Collapse All</md-tooltip> <md-icon md-font-icon="zmdi zmdi-triangle-up"></md-icon></md-button> </div></div></div>',
             scope: {},
             bindToController: {},
             link: link
