@@ -4,10 +4,10 @@
 (function () {
     'use strict';
 
-    angular.module('orgChart').directive('cascadeTreeSearchBox', cascadeTreeSearchBox);
+    angular.module('orgChart').directive('treeSearchBox', treeSearchBox);
 
     /*@ngInject*/
-    function cascadeTreeSearchBox($timeout, $q, $log) {
+    function treeSearchBox($timeout, $q, $log) {
 
         var directive = {
             replace: false,

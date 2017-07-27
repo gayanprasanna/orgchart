@@ -3,10 +3,10 @@
  */
 (function () {
     'use strict';
-    angular.module('orgChart').directive('cascadeTreeView', cascadeTreeView);
+    angular.module('orgChart').directive('treeView', treeView);
 
     /*@ngInject*/
-    function cascadeTreeView($filter, $compile, treeViewService, $timeout, toolSetService, $window) {
+    function treeView($filter, $compile, treeViewService, $timeout, toolSetService, $window) {
         var treeViewDirective = {
             replace: 'false',
             restrict: 'E',
@@ -123,7 +123,7 @@
 
             var wrapperElement = d3.select(elem[0]);
             var lastSearchedPath = [];
-            elem.append($compile("<div layout=\"row\" layout-align=\"space-around center\"><div flex><cascade-tree-search-box></cascade-tree-search-box></div><div flex><cascade-tool-set></cascade-tool-set></div></div>")(scope));
+            elem.append($compile("<div layout=\"row\" layout-align=\"space-around center\"><div flex><tree-search-box></tree-search-box></div><div flex><tree-tool-set></tree-tool-set></div></div>")(scope));
 
             function onInit() {
                 activateWatchers();
@@ -367,7 +367,7 @@
                  console.log("dragged");
                  }))*/;
 
-                nodeText.append("cascade-tree-node").attr("node",function (d) {
+                nodeText.append("tree-node").attr("node",function (d) {
                     treeViewService.pushNode(d);
                     return "";
                 }).attr("nodeId", function (d) {

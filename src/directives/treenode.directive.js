@@ -3,10 +3,10 @@
  */
 (function () {
     'use strict';
-    angular.module('orgChart').directive('cascadeTreeNode', cascadeTreeNode);
+    angular.module('orgChart').directive('treeNode', treeNode);
 
     /*@ngInject*/
-    function cascadeTreeNode(treeViewService, $timeout, $document,$rootScope) {
+    function treeNode(treeViewService, $timeout, $document,$rootScope) {
 
         var cascadeTreeNodeDirective = {
             restrict: 'E',
@@ -14,7 +14,7 @@
             // require:'^cascadeTreeView',
             controller: CascadeTreeNodeController,
             // templateUrl: 'treenode.tmpl.html',
-            template: '<div ng-class="{\'active-node\':vm.isActive}" class="{{vm.nodeClass}}" ng-mouseenter="vm.whenMouseEnter()" ng-mouseleave="vm.whenMouseLeave()" ng-click="vm.makeNodeActive()"> <div layout="column" layout-align="center center"> <div class="md-subhead">Some Text</div><div> <div class=""><img ng-src="assets/images/avatars/flasher.thumb.jpg" class="round-chip"></div></div><div class="md-subhead">{{vm.node.name}}</div><div layout-align="center center" layout-fill class="action-area" layout="row" ng-show="vm.isExpandedView"> <div ng-repeat="action in vm.nodeActions"><button ng-click="vm.makeCallBack(action.callBack)"><span ng-bind="action.name"></span>&nbsp;<i class="{{action.icon}}"></i></button></div></div></div></div>',
+            template: '<div ng-class="{\'active-node\':vm.isActive}" class="{{vm.nodeClass}}" ng-mouseenter="vm.whenMouseEnter()" ng-mouseleave="vm.whenMouseLeave()" ng-click="vm.makeNodeActive()"> <div layout="column" layout-align="center center"> <div class="md-subhead node-text-main">CEO</div><div> <div class="round-chip-wrapper"><img ng-src="assets/images/avatars/flasher.thumb.jpg" class="round-chip"></div></div><div class="md-subhead node-text-sub">{{vm.node.name}}</div><div layout-align="center center" layout-fill layout="row"> <div ng-repeat="action in vm.nodeActions"><button ng-click="vm.makeCallBack(action.callBack)" class="action-btn"><span></span>&nbsp;<i class="{{action.icon}}"></i></button></div></div></div></div>',
             controllerAs: 'vm',
             scope: {},
             bindToController: {
@@ -58,13 +58,13 @@
 
             function whenMouseEnter() {
                 console.log('mouse Entered');
-                vm.isExpandedView = true;
+                // vm.isExpandedView = true;
                 // vm.isPinnedNode = true;
             }
 
             function whenMouseLeave() {
                 console.log('mouse leaved');
-                vm.isExpandedView = false;
+                // vm.isExpandedView = false;
                 /*            $timeout(function(){
                  vm.isPinnedNode = false;
                  },1000);*/

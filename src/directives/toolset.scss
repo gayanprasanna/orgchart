@@ -1,0 +1,32 @@
+.toolset-wrapper {
+    position: fixed;
+    right: 23px;
+    top: 450px;
+}
+
+.toolset-btn {
+    outline: none;
+    background-color: #eeeaea; /* Gray */
+    border: none;
+    color: #0380af;
+    padding: 5px 5px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    margin: 4px 2px;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+    cursor: pointer;
+
+}
+
+.upper-rounded{
+    border-radius:10px 10px 0 0;
+}
+.lower-rounded{
+    border-radius: 0 0 10px 10px;
+}
+
+.toolset-btn:hover {
+    background-color: #c8dbe8;
+}

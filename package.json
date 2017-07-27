@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/gayanprasanna/orgchart#readme",
   "devDependencies": {
+    "browser-sync": "^2.18.13",
     "gulp": "^3.9.1",
     "gulp-csso": "^3.0.0",
     "gulp-jshint": "^2.0.4",

@@ -13,10 +13,26 @@ var uglify = require('gulp-uglify');
 var ngAnnotate = require('gulp-ng-annotate');
 var csso = require('gulp-csso');
 
+var browserSync = require('browser-sync').create();
+
 var configuration = {
-    production:!!gulpUtil.env.production
+    production: !!gulpUtil.env.production
 };
 console.log(gulpUtil.env.production);
+
+gulp.task('browser-sync', function () {
+        browserSync.init({
+            server: {
+                baseDir: './'
+            }
+        });
+    }
+)
+;
+
+gulp.task('serve', ['browser-sync', 'watch'], function () {
+    gulpUtil.log('started Serving');
+});
 /*
 
  //A default gulp task to just log a messages
@@ -25,11 +41,22 @@ console.log(gulpUtil.env.production);
  return gulpUtil.log('Gulp has started running');
  });*/
 
-gulp.task('default', ['initializing','watch']);
+gulp.task('default', ['initializing', 'watch']);
 
 gulp.task('watch', function () {
-    gulp.watch('src/**/*.js', ['jshint']);
-    gulp.watch('src/**/*.scss',['build-css'])
+    gulp.watch('src/**/*.js', ['jshint', 'js-watch']);
+    gulp.watch('src/**/*.scss', ['scss-watch']);
+    gulp.watch('src/**/*.html').on('change', browserSync.reload);
+});
+
+gulp.task('js-watch', ['build-js'], function (done) {
+    browserSync.reload();
+    done();
+});
+
+gulp.task('scss-watch', ['build-css'], function (done) {
+    browserSync.reload();
+    done();
 });
 
 gulp.task('jshint', function () {
@@ -38,28 +65,30 @@ gulp.task('jshint', function () {
         .pipe(jshint.reporter('jshint-stylish'));
 });
 
-gulp.task('initializing',function () {
+gulp.task('initializing', function () {
     return gulpUtil.log('Initializing...');
 });
 
-gulp.task('build-css',function () {
+gulp.task('build-css', function () {
     return gulp.src('src/**/*.scss')
         .pipe(sourcemaps.init())
         .pipe(sass())
         .pipe(concat('style.css'))
-        .pipe(configuration.production?csso():gulpUtil.noop())
+        .pipe(configuration.production ? csso() : gulpUtil.noop())
         .pipe(sourcemaps.write())
         .pipe(gulp.dest('dist/styles'))
+        .pipe(browserSync.stream());
 });
 
-gulp.task('build-js',function () {
+gulp.task('build-js', function () {
     return gulp.src('src/**/*.js')
         .pipe(sourcemaps.init())
         .pipe(concat('bundle.js'))
         .pipe(ngAnnotate())
-        .pipe(configuration.production?uglify().on('error', function(e){
+        .pipe(configuration.production ? uglify().on('error', function (e) {
             console.log(e);
-        }):gulpUtil.noop())
+        }) : gulpUtil.noop())
         .pipe(sourcemaps.write())
         .pipe(gulp.dest('dist/js'))
+        .pipe(browserSync.stream());
 });

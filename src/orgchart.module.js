@@ -3,5 +3,5 @@
  */
 (function () {
     'use strict';
-    angular.module('orgChart',[]);
+    angular.module('orgChart',['orgChart.example']);
 })();
