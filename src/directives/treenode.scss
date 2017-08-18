@@ -1,9 +1,7 @@
 @import "../scss/colors";
 
 .round-chip-wrapper {
-  top: -38px;
-  left: 84px;
-  position: fixed;
+  margin-top:-150%;
 }
 
 img.round-chip {
@@ -40,7 +38,7 @@ img.round-chip {
 
 path.link {
   fill: none;
-  stroke: #ccc;
+  stroke: #3faac2;
   stroke-width: 1.5px;
 }
 

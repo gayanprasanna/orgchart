@@ -14,7 +14,9 @@
             bindToController: {
                 data: '=',
                 abn: '&',
-                nodeActions: '@'
+                del: '&',
+                nodeActions: '@',
+                treedata:'='
             },
             controller: TreeViewDirectiveController,
             controllerAs: 'vm',
@@ -23,7 +25,7 @@
 
         function link(scope, elem, attrs, vm) {
             //TODO Fetch From the db and add to the service
-            var treedata = {
+            /*var treedata = {
                 "name": "RootNode",
                 "id": "id1",
                 "type": "type0",
@@ -108,9 +110,16 @@
                         "type": "type3"
                     }]
                 }]
-            };
+            };*/
 
+            var nodeBoundaries = {
+                width:240,
+                height:146,
+                horizontalSeperation:16,
+                verticalSeperation:128
+            };
             var nodeActiveClearListener;
+            var nodeDeleteListener;
             var nodeList = [];
             var m = [20, 20, 20, 20],
                 w = $window.innerWidth - 20 - m[1] - m[3],
@@ -232,18 +241,35 @@
              });*/
 
             var tree = d3.layout.tree()
-                .size([h, w])
-                .nodeSize([110, 60])
+                // .size([h, w])
+                .nodeSize([nodeBoundaries.width+nodeBoundaries.horizontalSeperation, nodeBoundaries.height+nodeBoundaries.verticalSeperation])
                 .separation(function separation(a, b) {
-                    return a.parent == b.parent ? 2 : 2;
+                    return a.parent == b.parent ? 1.25 : 1.5;
                 });
 
             var diagonal = d3.svg.diagonal()
-                .projection(function (d) {
-                    return [d.x + 80, d.y + 80];
+/*                .projection(function (d) {
+                    return [d.x + 120, d.y + 110];
+                });*/
+                .source(function (d) {
+                    return {
+                        "x": d.source.x +(nodeBoundaries.width+nodeBoundaries.horizontalSeperation) / 2,
+                        /*"y": d.source.y + 150*/
+                        // "x": d.source.x,
+                        "y": d.source.y+(nodeBoundaries.height+10)
+                    };
+                })
+                .target(function (d) {
+                    return {
+                        "x": d.target.x + (nodeBoundaries.width+nodeBoundaries.horizontalSeperation) / 2,
+                        /*"y": d.target.y*/
+                        // "x": d.target.x,
+                        "y": d.target.y-45
+                    };
+                })
+                .projection(function (d) { return [d.x + 0, d.y + 0];
                 });
-
-            root = treedata;
+            root = vm.treedata;
             root.x0 = h / 2;
             root.y0 = 0;
 
@@ -302,7 +328,7 @@
 
                 // Normalize for fixed-depth.
                 nodes.forEach(function (d) {
-                    d.y = d.depth * 200;
+                    d.y = d.depth * 300;
                 });
 
                 // Update the nodes...
@@ -332,11 +358,11 @@
 
                 //Adding a picture to the node circle
 
-                nodeEnter.append("svg:circle")
+/*                nodeEnter.append("svg:circle")
                     .attr("r", 1e-6)
                     .style("fill", function (d) {
                         return d._children ? "lightsteelblue" : "#fff";
-                    });
+                    });*/
 
                 var nodeText = nodeEnter
                     .append("svg:foreignObject")
@@ -345,14 +371,16 @@
                     //.attr("x", function(d) {
                     //  return d.children || d._children ? -10 : 10;
                     //})
+/*
                     .attr("y", -30)
                     .attr("x", -5)
+*/
                     .attr("text-anchor", function (d) {
                         return d.children || d._children ? "end" : "start";
                     })
                     .style("fill-opacity", 1e-6)
-                    .attr('width', 160)
-                    .attr('height', 120)
+                    .attr('width', nodeBoundaries.width)
+                    .attr('height', nodeBoundaries.height)
                     .append('xhtml:div')
                     /*                    .attr("class", function (d) {
                      return "node-label" + " node-" + d.type
@@ -656,7 +684,7 @@
             function highlightPath(node) {
                 //TODO must include the root node in the array
                 //Path array to store nodes
-                var path = searchWithinTree(treedata, node.name, []);
+                var path = searchWithinTree(vm.treedata, node.name, []);
 
                 if (angular.isDefined(path)) {
                     //function to open paths
@@ -793,6 +821,11 @@
              $compile(elem)(scope);*/
 
             nodeActiveClearListener = scope.$on('app:nodes:clearactive', onDeactivateNodes);
+            nodeDeleteListener = scope.$on('app:nodes:delete', onNodeDelete);
+
+            function onNodeDelete(ev,data) {
+                console.log(data);
+            }
 
             function makeNodeActive(id) {
                 var nodeList = d3.selectAll(".node-" + id.toString());
@@ -812,7 +845,8 @@
 
             scope.$on('$destroy', destroyListener);
             function destroyListener() {
-                nodeActiveClearListener;
+                nodeActiveClearListener();
+                nodeDeleteListener();
             }
         }
 
