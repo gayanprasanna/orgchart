@@ -1,0 +1,21 @@
+.btn-search {
+  background: #f26b55;
+  border: none;
+  border-top-right-radius: 2px !important;
+  border-bottom-right-radius: 2px !important;
+  position: relative;
+  height: 40px;
+  width:44px;
+  color: whitesmoke;
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 2px 1px -1px rgba(0, 0, 0, 0.12);
+}
+.auto-complete-custom {
+  margin-top: 20px;
+  width: 430px;
+}
+.btn-search-holder{
+  margin-top: 20px;
+}
+.search-box-holder{
+  max-width: 430px !important;
+}

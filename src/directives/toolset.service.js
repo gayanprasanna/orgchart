@@ -10,8 +10,9 @@
     function toolSetService() {
 
         var isAllExpandedMode = false;
-        var LOWEST_ZOOM_SCALE = 1;
-        var zoomScale = LOWEST_ZOOM_SCALE;
+        var LOWEST_ZOOM_SCALE = 0.3;
+        var DEFAULT_ZOOM_SCALE = 1;
+        var zoomScale = DEFAULT_ZOOM_SCALE;
 
         return {
             isExpandAllMode: isExpandAllMode,
@@ -32,6 +33,7 @@
         }
 
         function getZoomScale() {
+            console.log('getZoom Scale',zoomScale);
             return zoomScale;
         }
 
@@ -52,7 +54,7 @@
         }
 
         function decrementZoomScale() {
-            if (zoomScale > 1) {
+            if (zoomScale > -2.5) {
                 zoomScale -= 0.1;
             }
 

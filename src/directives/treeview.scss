@@ -67,3 +67,25 @@ path.link {
   stroke:steelblue;
 }
 
+.component-container{
+  position: absolute;
+  display: inline-block;
+}
+
+foreignObject{
+  overflow: visible;
+}
+
+.temp-link {
+  fill: none;
+  stroke: red;
+  stroke-width: 3px;
+}
+
+.ghost-area.show{
+  display:block;
+}
+
+.ghost-area, .active-drag .ghost-area{
+  display: none;
+}

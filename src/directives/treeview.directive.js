@@ -1,5 +1,5 @@
 /**
- * Created by user on 5/30/17.
+ * Created by Gayan Prasanna on 5/30/17.
  */
 (function () {
     'use strict';
@@ -15,124 +15,86 @@
                 data: '=',
                 abn: '&',
                 del: '&',
+                add: '&',
+                edit: '&',
                 nodeActions: '@',
-                treedata:'='
+                treedata: '=',
+                searchableList: '=',
+                imagepresent: '='
             },
             controller: TreeViewDirectiveController,
             controllerAs: 'vm',
-            link: link
+            link: {
+                pre: link
+            }
         };
 
         function link(scope, elem, attrs, vm) {
-            //TODO Fetch From the db and add to the service
-            /*var treedata = {
-                "name": "RootNode",
-                "id": "id1",
-                "type": "type0",
-                "addable": false,
-                "editable": false,
-                "removable": false,
-                "enableble": false,
-                "root":true,
-                "children": [{
-                    "name": "Landing A",
-                    "id": "id2",
-                    "type": "type1",
-                    "addable": true,
-                    "editable": true,
-                    "removable": true,
-                    "enablable": true,
-                    "enable": false,
-                    "children": [{
-                        "name": "Account 1",
-                        "id": "id3",
-                        "type": "type2",
-                        "children": [{
-                            "name": "tracking link 1",
-                            "id": "id4",
-                            "type": "type3",
-                            "enablable": true,
-                            "enable": true
-                        }, {
-                            "name": "tracking link 2",
-                            "id": "id5",
-                            "type": "type3",
-                            "enablable": true,
-                            "enable": true
-                        }, {
-                            "name": "tracking link 3",
-                            "id": "id6",
-                            "type": "type3",
-                            "enablable": true,
-                            "enable": false
-                        }]
-                    }, {
-                        "name": "Account 2",
-                        "id": "id7",
-                        "type": "type2"
-                    }, {
-                        "name": "Account 3",
-                        "id": "id9",
-                        "type": "type2"
-                    }]
-                }, {
-                    "name": "Landing B",
-                    "id": "id8",
-                    "type": "type1",
-                    "children": [{
-                        "name": "Account 4",
-                        "id": "id10",
-                        "type": "type2"
-                    }, {
-                        "name": "Account 5",
-                        "id": "id11",
-                        "type": "type2"
-                    }, {
-                        "name": "Account 6",
-                        "id": "id12",
-                        "type": "type2"
-                    }]
-                }, {
-                    "name": "Landing C",
-                    "id": "id13",
-                    "type": "type1",
-                    "children": [{
-                        "name": "Subtopic 7",
-                        "id": "id14",
-                        "type": "type3"
-                    }, {
-                        "name": "Subtopic 8",
-                        "id": "id15",
-                        "type": "type3"
-                    }, {
-                        "name": "Subtopic 9",
-                        "id": "id16",
-                        "type": "type3"
-                    }]
-                }]
-            };*/
 
             var nodeBoundaries = {
-                width:240,
-                height:146,
-                horizontalSeperation:16,
-                verticalSeperation:128
+                width: 240,
+                height: 146,
+                horizontalSeperation: 16,
+                verticalSeperation: 128
             };
+            var dragStarted=false;
+            var nodes;
+            var domNode;
+            var relCoords;
+            var panTimer;
+            // variables for drag/drop
+            var selectedNode = null;
+            var draggingNode = null;
+            // panning variables
+            var panSpeed = 200;
+            var panBoundary = 20; // Within 20px from edges will pan when dragging.
+            var translateCoords;
+            var links;
+            var nodePaths;
+            var nodesExit;
+            var parentLink;
+
             var nodeActiveClearListener;
             var nodeDeleteListener;
+            var nodeAfterAddListener;
+            var nodeAfterUpdateListener;
+            var dragListener;
             var nodeList = [];
             var m = [20, 20, 20, 20],
                 w = $window.innerWidth - 20 - m[1] - m[3],
+                iHeight = $window.innerHeight,
                 h = 600 - m[0] - m[2],
                 i = 0,
                 r = 800,
                 x = d3.scale.linear().domain([0, w]).range([0, w]),
                 y = d3.scale.linear().domain([0, h]).range([0, h]),
                 root;
-
+            var viewBoxBoundary = '0 0 ' + w + " " + iHeight;
             var wrapperElement = d3.select(elem[0]);
             var lastSearchedPath = [];
-            elem.append($compile("<div layout=\"row\" layout-align=\"space-around center\"><div flex><tree-search-box></tree-search-box></div><div flex><tree-tool-set></tree-tool-set></div></div>")(scope));
+
+            var zoom = d3.behavior.zoom()
+                .translate([0, 0])
+                .scale(toolSetService.getZoomScale())
+                .scaleExtent([0.3, 8])
+                .on("zoom", zoomed);
+            /*
+                        var zoomObject = d3.behavior.zoom()
+                            .translate([0, 0])
+                            .scale(toolSetService.getZoomScale())
+                            .scaleExtent([0.3, 8])
+                            .on("zoom", zoomedWrapper);*/
+
+            // zoom();
+            elem.append($compile("<div class='component-container'><div layout=\"row\" layout-align=\"space-around center\"><div flex><tree-search-box searchable-list='vm.searchableList'></tree-search-box></div><div flex><tree-tool-set zoom-trigger-call-back='vm.zoomTrigger(status)'></tree-tool-set></div></div></div>")(scope));
+
+            vm.zoomTrigger = zoomTrigger;
+
+
+            function zoomTrigger(status) {
+                console.log(status);
+                zoomClick(status);
+            }
 
             function onInit() {
                 activateWatchers();
@@ -141,7 +103,7 @@
 
             function activateWatchers() {
                 onSearchWatch();
-                onZoomWatch();
+                // onZoomWatch();
                 onExpandWatch();
             }
 
@@ -150,11 +112,27 @@
                     return toolSetService.isExpandAllMode()
                 }, function (isInExpandAllMode) {
                     if (isInExpandAllMode) {
-                        expandAll();
+                        expandAllInChain();
                     } else {
-                        collapseAll();
+                        collapseAllInChain();
                     }
                 })
+            }
+
+            function expandAllInChain() {
+                forceScale(0.5);
+                toolSetService.setZoomScale(0.5);
+                centerTheRoot();
+                // forceZoom();
+                expandAll();
+            }
+
+            function collapseAllInChain() {
+                forceScale(1);
+                toolSetService.setZoomScale(1);
+                centerTheRoot();
+                /*                forceZoom();*/
+                collapseAll();
             }
 
             function onSearchWatch() {
@@ -195,79 +173,330 @@
 
             }
 
+            function forceZoom() {
+                var zoomScale = toolSetService.getZoomScale();
+                console.log(zoomScale);
+                vis.transition()
+                    .duration(750)
+                    .call(zoomObject.translate([0, 0]).scale(zoomScale).scaleExtent([0.3, 8]).event);
+
+            }
+
+            function forceScale(scale) {
+                var view = {
+                    x: 0,
+                    y: 0,
+                    k: scale
+                };
+                interpolateZoom([view.x, view.y], view.k);
+            }
+
+            // Define the drag listeners for drag/drop behaviour of nodes.
+            dragListener = d3.behavior.drag()
+                .on("dragstart", function(d) {
+                    if (d == root) {
+                        return;
+                    }
+                    dragStarted = true;
+                    nodes = tree.nodes(d);
+                    d3.event.sourceEvent.stopPropagation();
+                    // it's important that we suppress the mouseover event on the node being dragged. Otherwise it will absorb the mouseover event and the underlying node will not detect it d3.select(this).attr('pointer-events', 'none');
+                })
+                .on("drag", function(d) {
+                    if (d == root) {
+                        return;
+                    }
+                    if (dragStarted) {
+                        domNode = this;
+                        initiateDrag(d, domNode);
+                    }
+                    // get coords of mouseEvent relative to svg container to allow for panning
+                    relCoords = d3.mouse($('svg').get(0));
+                    if (relCoords[0] < panBoundary) {
+                        panTimer = true;
+                        pan(this, 'left');
+                    } else if (relCoords[0] > ($('svg').width() - panBoundary)) {
+                        panTimer = true;
+                        pan(this, 'right');
+                    } else if (relCoords[1] < panBoundary) {
+                        panTimer = true;
+                        pan(this, 'up');
+                    } else if (relCoords[1] > ($('svg').height() - panBoundary)) {
+                        panTimer = true;
+                        pan(this, 'down');
+                    } else {
+                        try {
+                            clearTimeout(panTimer);
+                        } catch (e) {
+                            console.error(e);
+                        }
+                    }
+
+                    d.x0 += d3.event.dx;
+                    d.y0 += d3.event.dy;
+
+                    var node = d3.select(this);
+
+                    node.attr("transform", "translate(" + d.x0 + "," + d.y0 + ")");
+                    updateTempConnector();
+                }).on("dragend", function(d) {
+                    if (d == root) {
+                        return;
+                    }
+                    domNode = this;
+                    if (selectedNode) {
+                        // now remove the element from the parent, and insert it into the new elements children
+                        var index = draggingNode.parent.children.indexOf(draggingNode);
+                        if (index > -1) {
+                            draggingNode.parent.children.splice(index, 1);
+                        }
+                        if (typeof selectedNode.children !== 'undefined' || typeof selectedNode._children !== 'undefined') {
+                            if (typeof selectedNode.children !== 'undefined') {
+                                selectedNode.children.push(draggingNode);
+                            } else {
+                                selectedNode._children.push(draggingNode);
+                            }
+                        } else {
+                            selectedNode.children = [];
+                            selectedNode.children.push(draggingNode);
+                        }
+                        // Make sure that the node being added to is expanded so user can see added node is correctly moved
+                        /*                        expand(selectedNode);
+                                                sortTree();*/
+                        endDrag();
+                    } else {
+                        endDrag();
+                    }
+                });
+            function initiateDrag(d, domNode) {
+                draggingNode = d;
+                d3.select(domNode).select('.ghost-area').attr('pointer-events', 'none');
+                d3.selectAll('.ghost-area').attr('class', 'ghost-area show');
+                d3.select(domNode).attr('class', 'node active-drag');
+                vis.selectAll("g.node").sort(function(a, b) { // select the parent and sort the path's
+                    if (a.id != draggingNode.id) return 1; // a is not the hovered element, send "a" to the back
+                    else return -1; // a is the hovered element, bring "a" to the front
+                });
+                // if nodes has children, remove the links and nodes
+                if (nodes.length > 1) {
+                    // remove link paths
+                    links = tree.links(nodes);
+                    nodePaths = vis.selectAll("path.link")
+                        .data(links, function(d) {
+                            return d.target.id;
+                        }).remove();
+                    // remove child nodes
+                    nodesExit = vis.selectAll("g.node")
+                        .data(nodes, function(d) {
+                            return d.id;
+                        }).filter(function(d, i) {
+                            if (d.id == draggingNode.id) {
+                                return false;
+                            }
+                            return true;
+                        }).remove();
+                }
+                // remove parent link
+                parentLink = tree.links(tree.nodes(draggingNode.parent));
+                vis.selectAll('path.link').filter(function(d, i) {
+                    if (d.target.id == draggingNode.id) {
+                        return true;
+                    }
+                    return false;
+                }).remove();
+                dragStarted = null;
+            }
+            function pan(domNode, direction) {
+                var speed = panSpeed;
+                var translateX;
+                var translateY;
+                var scaleX;
+                var scaleY;
+                var scale;
+                if (panTimer) {
+                    clearTimeout(panTimer);
+                    translateCoords = d3.transform(vis.attr("transform"));
+                    if (direction == 'left' || direction == 'right') {
+                        translateX = direction == 'left' ? translateCoords.translate[0] + speed : translateCoords.translate[0] - speed;
+                        translateY = translateCoords.translate[1];
+                    } else if (direction == 'up' || direction == 'down') {
+                        translateX = translateCoords.translate[0];
+                        translateY = direction == 'up' ? translateCoords.translate[1] + speed : translateCoords.translate[1] - speed;
+                    }
+                    scaleX = translateCoords.scale[0];
+                    scaleY = translateCoords.scale[1];
+                    scale = toolSetService.getZoomScale();
+                    vis.transition().attr("transform", "translate(" + translateX + "," + translateY + ")scale(" + scale + ")");
+                    d3.select(domNode).select('g.node').attr("transform", "translate(" + translateX + "," + translateY + ")");
+                    zoom.scale(scale);
+                    zoom.translate([translateX, translateY]);
+                    panTimer = setTimeout(function() {
+                        pan(domNode, speed, direction);
+                    }, 50);
+                }
+            }
+            // Function to update the temporary connector indicating dragging affiliation
+            var updateTempConnector = function() {
+                var data = [];
+                if (draggingNode !== null && selectedNode !== null) {
+                    // have to flip the source coordinates since we did this for the existing connectors on the original tree
+                    data = [{
+                        source: {
+                            x: selectedNode.x0 +(nodeBoundaries.width/2),
+                            y: selectedNode.y0+nodeBoundaries.height+10
+                        },
+                        target: {
+                            x: draggingNode.x0+(nodeBoundaries.width/2),
+                            y: draggingNode.y0
+                        }
+                    }];
+                }
+                var link = vis.selectAll(".temp-link").data(data);
+                link.enter().append("path")
+                    .attr("class", "temp-link")
+                    .attr("d", d3.svg.diagonal())
+                    .attr('pointer-events', 'none');
+                link.attr("d", d3.svg.diagonal());
+                link.exit().remove();
+            };
+
+            var overInGhostArea = function(d) {
+                selectedNode = d;
+                updateTempConnector();
+            };
+
+            var outOfGhostArea = function(d) {
+                selectedNode = null;
+                updateTempConnector();
+            };
+
+            function endDrag() {
+                selectedNode = null;
+                d3.selectAll('.ghost-area').attr('class', 'ghost-area');
+                d3.select(domNode).attr('class', 'node');
+                // now restore the mouseover event or we won't be able to drag a 2nd time
+                d3.select(domNode).select('.ghost-area').attr('pointer-events', '');
+                updateTempConnector();
+                if (draggingNode !== null) {
+                    update(root);
+                    panToTheNode(draggingNode);
+                    draggingNode = null;
+                }
+            }
+
             onInit();
 
-            var vis = wrapperElement.append("div").attr("layout", "row").attr("layout-align", "space-around center")
+            var vis = wrapperElement.append("div")
+                .attr("layout", "row")
+                .attr("layout-align", "space-around center")
                 .call(function () {
-                    $compile(this[0])(scope);
+                    // $compile(this[0])(scope);
                 })
                 .append("div").attr("flex", "").call(function () {
-                    $compile(this[0])(scope);
+                    // $compile(this[0])(scope);
                 })
                 .append("svg:svg")
-                .attr("viewBox", "0 0 600 600")
-                .attr("width", w + m[1] + m[3])
-                .attr("height", h + m[0] + m[2])
+                .attr("viewBox", viewBoxBoundary)
+                .attr("style","cursor:move;")
+                .attr("width", "100%")
+                .attr("height", iHeight)
+                /*                .call(d3.behavior.zoom().on("zoom", function () {
+                                    toolSetService.setZoomScale(d3.event.scale);
+                                    scope.$apply();
+                                    console.log(d3.event.scale);
+                                    if(d3.event.scale>0.5){
+                                        // vis.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")")
+                                    }
+
+                                    // vis.attr("transform", "translate(" + d3.event.translate + ")");
+                                }))*/
+                .call(zoom)
+                // .call(zoomObject)
                 .append("svg:g")
                 //.attr("pointer-events", "all")
-                .attr("transform", "translate(" + m[3] + "," + m[0] + ")")
+                //centering the root node
+                .attr("transform", "translate(" + (($window.innerWidth / 2) - 120) + "," + (h / 4) + ")")
+                .attr("style", "cursor:pointer;")
                 //.call(d3.behavior.zoom().scaleExtent([1,8]).on("zoom",zoom));
                 //.call(d3.behavior.zoom().x(x).y(y).scaleExtent([1, 8]).on
-                .call(d3.behavior.zoom().on("zoom", function () {
-                    toolSetService.setZoomScale(d3.event.scale);
-                    scope.$apply();
-                    console.log(d3.event.scale);
-                    // vis.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")")
-                    vis.attr("transform", "translate(" + d3.event.translate + ")");
-                })).on("click", stopPropogation, false).call(d3.behavior.drag().on("dragstart", function () {
-                    d3.event.sourceEvent.stopPropagation();
+                .on("click", stopPropogation, false)
+                .call(d3.behavior.drag().on("dragstart", function () {
+                    // d3.event.sourceEvent.stopPropagation();
+                    /*         vis.transition()
+                             //duration of the animation of transition
+                                 .duration(0)
+                                 // delay time in ms
+                                 .delay(0)
+                                 .attr("transform", function (d) {
+                                     return "scale(" + toolSetService.getZoomScale() + ")";
+                                 });
+         */
                 }).on("drag", function () {
                     console.log("dragged");
-                    d3.event.sourceEvent.stopPropagation();
-                })).append("g").attr("width", 160).attr("height", 120).attr("class", "tree-holder")/*.call(d3.behavior.drag().on("dragstart", function () {
+                    // d3.event.sourceEvent.stopPropagation();
+                }))
+                .append("g").attr("width", 160).attr("height", 120).attr("class", "tree-holder")/*.call(d3.behavior.drag().on("dragstart", function () {
              d3.event.sourceEvent.stopPropagation();
              }).on("drag", function () {
              console.log("dragged");
              }))*/;
 
-            //TODO uncomment later
-            /*            vis.append("rect")
-             // .attr("class", "overlay")
-             .attr("width", w + m[1] + m[3])
-             .attr("height", h + m[0] + m[2])
-             .attr("opacity", 0).on("click", function () {
-             stopPropogation();
-             reset();
-             });*/
 
             var tree = d3.layout.tree()
-                // .size([h, w])
-                .nodeSize([nodeBoundaries.width+nodeBoundaries.horizontalSeperation, nodeBoundaries.height+nodeBoundaries.verticalSeperation])
+            // .size([h, w])
+                .nodeSize([nodeBoundaries.width + nodeBoundaries.horizontalSeperation, nodeBoundaries.height + nodeBoundaries.verticalSeperation])
                 .separation(function separation(a, b) {
                     return a.parent == b.parent ? 1.25 : 1.5;
                 });
 
+            var line = d3.svg.line()
+
+                .x(function (d) {
+                    return xScale(d.x);
+                })
+                .y(function (d) {
+                    return yScale(d.y);
+                });
+
+            function fetchLineData() {
+                var source = {
+                    "x": d.source.x + (nodeBoundaries.width) / 2,
+                    "y": d.source.y + (nodeBoundaries.height + 10)
+                };
+                var target = {
+                    "x": d.target.x + (nodeBoundaries.width) / 2,
+                    "y": d.target.y - (attrs.imagepresent == 'true' ? 45 : 0)
+                };
+
+                var lineDataArray = [];
+                lineDataArray.push(source);
+                lineDataArray.push(target);
+
+                return lineDataArray;
+            }
+
             var diagonal = d3.svg.diagonal()
-/*                .projection(function (d) {
-                    return [d.x + 120, d.y + 110];
-                });*/
+            /*                .projection(function (d) {
+                                return [d.x + 120, d.y + 110];
+                            });*/
                 .source(function (d) {
                     return {
-                        "x": d.source.x +(nodeBoundaries.width+nodeBoundaries.horizontalSeperation) / 2,
+                        "x": d.source.x + (nodeBoundaries.width) / 2,
                         /*"y": d.source.y + 150*/
                         // "x": d.source.x,
-                        "y": d.source.y+(nodeBoundaries.height+10)
+                        "y": d.source.y + (nodeBoundaries.height + 10)
                     };
                 })
                 .target(function (d) {
                     return {
-                        "x": d.target.x + (nodeBoundaries.width+nodeBoundaries.horizontalSeperation) / 2,
+                        "x": d.target.x + (nodeBoundaries.width) / 2,
                         /*"y": d.target.y*/
                         // "x": d.target.x,
-                        "y": d.target.y-45
+                        "y": d.target.y - (attrs.imagepresent == 'true' ? 45 : 0)
                     };
                 })
-                .projection(function (d) { return [d.x + 0, d.y + 0];
+                .projection(function (d) {
+                    return [d.x + 0, d.y + 0];
                 });
             root = vm.treedata;
             root.x0 = h / 2;
@@ -312,10 +541,8 @@
 
             console.log(root);
 
-// initialize the display to show a few nodes.
+            // initialize the display to show a few nodes.
             root.children.forEach(toggleAll);
-//toggle(root.children[1]);
-//toggle(root.children[9]);
 
 
             update(root);
@@ -339,6 +566,7 @@
 
                 // Enter any new nodes at the parent's previous position.
                 var nodeEnter = node.enter().append("svg:g")
+                    .call(dragListener)
                     .attr("class", "node")
                     .attr("id", function (d) {
                         return "node-" + d.id;
@@ -351,42 +579,33 @@
 
                         toggle(d);
                         update(d);
-                        if (d['info']) {
-                            playvid(d['info']);
-                        }
                     });
 
-                //Adding a picture to the node circle
-
-/*                nodeEnter.append("svg:circle")
-                    .attr("r", 1e-6)
-                    .style("fill", function (d) {
-                        return d._children ? "lightsteelblue" : "#fff";
-                    });*/
+                nodeEnter.append("rect")
+                    .attr('class', 'ghost-area')
+                    .attr("width", nodeBoundaries.width)
+                    .attr("height", nodeBoundaries.height+150)
+                    .attr("opacity", 0.2) // change this to zero to hide the target area
+                    .style("fill", "transparent")
+                    .attr('pointer-events', 'mouseover')
+                    .on("mouseover", function(node) {
+                        overInGhostArea(node);
+                    })
+                    .on("mouseout", function(node) {
+                        outOfGhostArea(node);
+                    });
 
                 var nodeText = nodeEnter
                     .append("svg:foreignObject")
-                    //.attr("y", function(d) { return d.children || d._children ? -10 : 10; })
-                    //.attr("dx", ".35em")
-                    //.attr("x", function(d) {
-                    //  return d.children || d._children ? -10 : 10;
-                    //})
-/*
-                    .attr("y", -30)
-                    .attr("x", -5)
-*/
                     .attr("text-anchor", function (d) {
                         return d.children || d._children ? "end" : "start";
                     })
                     .style("fill-opacity", 1e-6)
+                    // .style("overflow", "visible")
+                    // .classed("of",function(){return true;})
                     .attr('width', nodeBoundaries.width)
                     .attr('height', nodeBoundaries.height)
                     .append('xhtml:div')
-                    /*                    .attr("class", function (d) {
-                     return "node-label" + " node-" + d.type
-                     }).attr("ng-show", "true").call(function () {
-                     $compile(this[0].parentNode)(scope);
-                     })*/
                     .classed("disabled", function (d) {
                         return d.enable !== undefined && !d.enable;
                     }).on("click", onClickedNode)/*.call(d3.behavior.drag().on("dragstart", function () {
@@ -395,69 +614,17 @@
                  console.log("dragged");
                  }))*/;
 
-                nodeText.append("tree-node").attr("node",function (d) {
+                nodeText.append("tree-node").attr("node", function (d) {
                     treeViewService.pushNode(d);
                     return "";
                 }).attr("nodeId", function (d) {
                     return d.id;
+                }).attr("imagePresent", function (d) {
+                    return vm.imagepresent;
                 }).attr("isPinnedNode", "false").attr("nodeActions", attrs.nodeactions)
                     .each(function () {
                         $compile(this)(scope);
                     });
-                /*
-                 .call(function () {
-                 $compile(this[0].parentNode)(scope);
-                 });
-                 */
-                /*
-                 //Enable node button
-                 nodeText.filter(function (d) {
-                 return d.enablable;
-                 })
-                 .append("input", ".")
-                 .attr("type", "checkbox")
-                 .property("checked", function (d) {
-                 return d.enable;
-                 })
-                 .on("change", toggleEnable, true)
-                 .on("click", stopPropogation, true);
-
-                 //Node label
-                 nodeText.append("span")
-                 .attr("class", "node-text")
-                 .text(function (d) {
-                 return d.name + ' X - ' + d.x + ', Y - ' + d.y;
-                 });
-
-                 //Edit node button
-                 nodeText.filter(function (d) {
-                 return d.editable;
-                 })
-                 .append("a")
-                 .attr("class", "node-edit")
-                 .on("click", onEditNode, true)
-                 .append("i")
-                 .attr("class", "fa fa-pencil");
-
-                 //Add node button
-                 nodeText.filter(function (d) {
-                 return d.addable;
-                 })
-                 .append("a")
-                 .attr("class", "node-add")
-                 .on("click", onAddNode, true)
-                 .append("i")
-                 .attr("class", "fa fa-plus");
-
-                 //Remove node button
-                 nodeText.filter(function (d) {
-                 return d.removable;
-                 })
-                 .append("a")
-                 .attr("class", "node-remove")
-                 .on("click", onRemoveNode, true)
-                 .append("i")
-                 .attr("class", "fa fa-times");*/
 
                 // Transition nodes to their new position.
                 var nodeUpdate = node.transition()
@@ -465,21 +632,21 @@
                     .attr("transform", function (d) {
                         return "translate(" + d.x + "," + d.y + ")";
                     });
+                /*
+                                nodeUpdate.select("circle")
+                                    .attr("r", 4.5)
+                                    .style("fill", function (d) {
+                                        if (d.class === 'highlight-link') {
+                                            return '#ff4136';
+                                        } else if (d._children) {
+                                            return 'lightsteelblue';
+                                        } else {
+                                            return '#fff';
+                                        }
+                                    });
 
-                nodeUpdate.select("circle")
-                    .attr("r", 4.5)
-                    .style("fill", function (d) {
-                        if (d.class === 'highlight-link') {
-                            return '#ff4136';
-                        } else if (d._children) {
-                            return 'lightsteelblue';
-                        } else {
-                            return '#fff';
-                        }
-                    });
-
-                nodeUpdate.select("text")
-                    .style("fill-opacity", 1);
+                                nodeUpdate.select("text")
+                                    .style("fill-opacity", 1);*/
 
                 // Transition exiting ndoes to the parent's new position.
                 var nodeExit = node.exit().transition()
@@ -516,6 +683,12 @@
                     .transition()
                     .duration(duration)
                     .attr("d", diagonal);
+                /*                    .attr("d", function (d) {
+                                        return "M" + d.source.y + "," + d.source.x
+                                            + "C" + (d.target.y + 100) + "," + d.source.x
+                                            + " " + (d.target.y + 100) + "," + d.target.x
+                                            + " " + d.target.y + "," + d.target.x;
+                                    });*/
 
                 // Transition links to their new position.
                 link.transition()
@@ -550,10 +723,9 @@
                     d.x0 = d.x;
                     d.y0 = d.y;
                 });
-/*
                 angular.copy(nodes, nodeList);
 
-                treeViewService.setNodes(nodeList);*/
+                treeViewService.setNodes(nodeList);
             }
 
 // Toggle children
@@ -573,20 +745,72 @@
             }
 
 // zoom in / out
-            function zoom(d) {
-                //vis.attr("transform", "transl3ate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-                var nodes = vis.selectAll("g.node");
-                nodes.attr("transform", transform);
+//             function zoom(d) {
+//                 //vis.attr("transform", "transl3ate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+//                 var nodes = vis.selectAll("g.node");
+//                 nodes.attr("transform", transform);
+//
+//                 // Update the links...
+//                 var link = vis.selectAll("path.link");
+//                 link.attr("d", translate);
+//
+//                 // Enter any new links at hte parent's previous position
+//                 //link.attr("d", function(d) {
+//                 //      var o = {x: d.x0, y: d.y0};
+//                 //      return diagonal({source: o, target: o});
+//                 //    });
+//             }
 
-                // Update the links...
-                var link = vis.selectAll("path.link");
-                link.attr("d", translate);
+            function determineNodeRelativeLocation(d) {
+                if (d.source.x == d.target.x) {
+                    return 'straight';
+                } else if (d.source.x > d.target.x) {
+                    return 'onleft';
+                } else {
+                    return 'onright';
+                }
+            }
 
-                // Enter any new links at hte parent's previous position
-                //link.attr("d", function(d) {
-                //      var o = {x: d.x0, y: d.y0};
-                //      return diagonal({source: o, target: o});
-                //    });
+            function generatePath(d) {
+                var relativeLocation = determineNodeRelativeLocation(d);
+                var pathString = '';
+
+                switch (relativeLocation) {
+                    case 'straight':
+                        pathString += "M " + d.source.x + "," + d.source.y
+                            + " L " + d.source.x + "," + (d.target.y - d.source.y)
+                            + " M " + d.source.x + "," + (d.target.y - d.source.y);
+                        break;
+                    case 'onleft':
+                        pathString += "M " + d.source.x + "," + d.source.y
+                            + " L " + d.source.x + "," + (d.source.y + 10)
+                            + " Q " + d.source.x + "," + ((d.source.y + 10) + 8)
+                            + " " + (d.source.x - 8) + "," + ((d.source.y + 10) + 8)
+                            + " L " + ((d.source.x - 8) - ((d.target.x - d.source.x) - 120)) + "," + ((d.source.y + 10) + 8)
+                            + " Q " + (((d.source.x - 8) - ((d.target.x - d.source.x) - 120)) - 8) + "," + ((d.source.y + 10) + 8)
+                            + " " + (((d.source.x - 8) - ((d.target.x - d.source.x) - 120)) - 8) + "," + (((d.source.y + 10) + 8) + 8)
+                            + " L " + (((d.source.x - 8) - ((d.target.x - d.source.x) - 120)) - 8) + "," + ((d.target.y - d.source.y))
+                            /*+ "C" + (d.source.x + d.target.x) / 2 + "," + d.source.y
+                            + " " + (d.source.x + d.target.x) / 2 + "," + d.target.y*/
+                            // + " M " + (((d.source.x - 8) - ((d.target.x-d.source.x)-120)) - 8) + "," + ((d.target.y-d.source.y));
+                            + " M " + d.target.x + "," + d.target.y;
+                        break;
+                    case 'onright':
+                        pathString += "M " + d.source.x + "," + d.source.y
+                            + " L " + d.source.x + "," + (d.source.y + 10)
+                            + " Q " + d.source.x + "," + ((d.source.y + 10) + 8)
+                            + " " + (d.source.x + 8) + "," + ((d.source.y + 10) + 8)
+                            + " L " + ((d.source.x + 8) - ((d.target.x - d.source.x) - 120)) + "," + ((d.source.y + 10) + 8)
+                            + " Q " + (((d.source.x + 8) - ((d.target.x - d.source.x) - 120)) + 8) + "," + ((d.source.y + 10) + 8)
+                            + " " + (((d.source.x + 8) - ((d.target.x - d.source.x) - 120)) + 8) + "," + (((d.source.y + 10) + 8) + 8)
+                            + " L " + (((d.source.x + 8) - ((d.target.x - d.source.x) - 120)) + 8) + "," + ((d.target.y - d.source.y))
+                            /*+ "C" + (d.source.x + d.target.x) / 2 + "," + d.source.y
+                            + " " + (d.source.x + d.target.x) / 2 + "," + d.target.y*/
+                            + " M " + (((d.source.x + 8) - ((d.target.x - d.source.x) - 120)) + 8) + "," + ((d.target.y - d.source.y));
+                        break;
+                }
+
+                return pathString;
             }
 
             function transform(d) {
@@ -617,15 +841,11 @@
                 stopPropogation();
             }
 
-            function onAddNode(d) {
+            function onAddNode(parent, child) {
                 var length = 9;
                 var id = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, length);
-                addChildNode(d.id, {
-                    "name": "new child node",
-                    "id": id,
-                    "type": "type2"
-                });
-                stopPropogation();
+                addChildNode(parent.id, child);
+                // stopPropogation();
             }
 
             function onRemoveNode(d) {
@@ -633,8 +853,37 @@
                 if (index > -1) {
                     d.parent.children.splice(index, 1);
                 }
+                findIntheRootAndDestoroy(root.children, d);
                 update(d.parent);
                 stopPropogation();
+            }
+
+            function findIntheRootAndDestoroy(list, node) {
+                angular.forEach(list, function (value, key) {
+
+                    if (node.id == value.id) {
+                        var index = list.indexOf(value);
+                        if (index > -1) {
+                            list.splice(index, 1);
+                        }
+                    } else if (angular.isDefined(value.children) && value.children !== null) {
+                        findIntheRootAndDestoroy(value.children, node);
+                    }
+                });
+            }
+
+            function findIntheRootAndReplaceName(list, node) {
+                angular.forEach(list, function (value, key) {
+
+                    if (node.id == value.id) {
+                        var index = list.indexOf(value);
+                        if (index > -1) {
+                            list[index].name = node.name;
+                        }
+                    } else if (angular.isDefined(value.children) && value.children !== null) {
+                        findIntheRootAndDestoroy(value.children, node);
+                    }
+                });
             }
 
             function addChildNode(parentId, newNode) {
@@ -647,9 +896,14 @@
                     toggle(nodeData);
                 } else if (nodeData.children != null) {
                     nodeData.children.push(newNode);
+                } else if (nodeData._children == null) {
+                    nodeData._children = [];
+                    nodeData._children.push(newNode);
+                    toggle(nodeData);
                 }
-                update(node);
-                stopPropogation();
+                update(nodeData);
+
+                // stopPropogation();
             }
 
             function toggleEnable(d) {
@@ -703,12 +957,12 @@
 
                     //TODO assume that id of the root node is 1,.make this more consistent later
                     // if (value.id !=='id1') {
-                        value.class = 'highlight-link';
-                        if (value._children) {
-                            value.children = value._children;
-                            value._children = null;
-                        }
-                        update(value);
+                    value.class = 'highlight-link';
+                    if (value._children) {
+                        value.children = value._children;
+                        value._children = null;
+                    }
+                    update(value);
                     // }
                 })
             }
@@ -772,27 +1026,15 @@
             }
 
             function panToTheNode(node) {
-                var scale = 1;//FIXME add scale to higher if need
-                var translate = [node.x / 2 - scale * node.x, node.y / 2 - scale * node.y];
+                // var scale = 1;//FIXME add scale to higher if need
+                var scale = toolSetService.getZoomScale();
+                var translate = [-scale * node.x, -scale * node.y];
+                console.log('node', node);
+                console.log('node translate ', translate);
                 vis.transition()
                     .duration(1250)
-                    .call(zoomObject.translate(translate).scale(scale).event);
+                    .call(zoom.translate(translate).scale(scale).event);
             }
-
-            /*            function calculateTranslation(node) {
-             var trnaslationSet= [];
-             if(node.x<300){
-             300-node.x;
-             }else if(node.x>300){
-             node.x-300;
-             }
-             }*/
-
-            var zoomObject = d3.behavior.zoom()
-                .translate([0, 0])
-                .scale(1)
-                .scaleExtent([1, 8])
-                .on("zoom", zoomedWrapper);
 
 
             function zoomedWrapper() {
@@ -805,9 +1047,10 @@
                 active.classed("active", false);
                 active = d3.select(null);
 
-                vis.transition()
-                    .duration(750)
-                    .call(zoomObject.translate([150, 100]).scale(1).event);
+                //TODO remove ASAP
+                /*                vis.transition()
+                                    .duration(750)
+                                    .call(zoomObject.translate([150, 100]).scale(1).event);*/
 
                 return true;
             }
@@ -817,14 +1060,48 @@
                 return treeNode;
             }
 
-            /*            elem.removeAttr("cascade-tree-view");
-             $compile(elem)(scope);*/
+            function getTreeNodeByID(id) {
+                var treeNode = $filter('filter')(nodeList, {'id': id}, true)[0];
+                return treeNode;
+            }
+
+            function centerTheRoot() {
+                //Transform to the center (0,0)
+                transformNode(0, 0);
+            }
+
+            function transformNode(xPos, yPos) {
+                vis.transition()
+                //duration of the animation of transition
+                    .duration(1000)
+                    // delay time in ms
+                    .delay(100)
+                    .attr("transform", function (d) {
+                        return "translate(" + (xPos) + "," + (yPos) + ")"
+                            + "scale(" + toolSetService.getZoomScale() + ")";
+                    });
+            }
 
             nodeActiveClearListener = scope.$on('app:nodes:clearactive', onDeactivateNodes);
             nodeDeleteListener = scope.$on('app:nodes:delete', onNodeDelete);
+            nodeAfterAddListener = scope.$on('app:nodes:add::after', onNodeAfterAdd);
+            nodeAfterUpdateListener = scope.$on('app:nodes:update::after', onNodeAfterUpdate);
 
-            function onNodeDelete(ev,data) {
+            function onNodeAfterUpdate(ev, data) {
+                findIntheRootAndReplaceName(root.children, data.lastEditedNode);
+                update(data.lastEditedNode);
+                stopPropogation();
+            }
+
+            function onNodeAfterAdd(ev, data) {
+                var resolvedNode = getTreeNodeByID(data.parentNode.id);
+                onAddNode(resolvedNode, data.lastAddedNode);
+            }
+
+            function onNodeDelete(ev, data) {
                 console.log(data);
+                var resolvedNode = getTreeNodeByID(data.nodeID);
+                onRemoveNode(resolvedNode);
             }
 
             function makeNodeActive(id) {
@@ -843,10 +1120,75 @@
                 clearAllActiveNodes();
             }
 
+            function interpolateZoom(translate, scale) {
+                return d3.transition().duration(250).tween("wheel.zoom", function () {
+                    var iTranslate = d3.interpolate(zoom.translate(), translate),
+                        iScale = d3.interpolate(zoom.scale(), scale);
+                    return function (t) {
+                        zoom
+                            .scale(iScale(t))
+                            .translate(iTranslate(t));
+                        zoomed();
+                    };
+                });
+            }
+
+            function zoomClick(status) {
+                var direction = 1,
+                    factor = 0.2,
+                    target_zoom = 1,
+                    center = [w / 2, h / 2],
+                    extent = zoom.scaleExtent(),
+                    translate = zoom.translate(),
+                    translate0 = [],
+                    l = [],
+                    view = {x: translate[0], y: translate[1], k: zoom.scale()};
+
+                // d3.event.preventDefault();
+                direction = (status === 'increment') ? 1 : -1;
+                target_zoom = zoom.scale() * (1 + factor * direction);
+
+                if (target_zoom < extent[0] || target_zoom > extent[1]) {
+                    return false;
+                }
+
+                translate0 = [(center[0] - view.x) / view.k, (center[1] - view.y) / view.k];
+                view.k = target_zoom;
+                l = [translate0[0] * view.k + view.x, translate0[1] * view.k + view.y];
+
+                view.x += center[0] - l[0];
+                view.y += center[1] - l[1];
+
+                interpolateZoom(zoom.translate(), view.k);
+                // zoomed();
+            }
+
+            function zoomed() {
+                console.log(zoom.scale());
+                toolSetService.setZoomScale(zoom.scale());
+                vis.attr("transform",
+                    "translate(" + zoom.translate() + ")" +
+                    "scale(" + toolSetService.getZoomScale() + ")"
+                    // "scale(" + zoom.scale() + ")"
+                );
+                // zoomWithTween();
+            }
+
+            function zoomWithTween(){
+                vis.transition()
+                    .attr("transform", "translate(" + zoom.translate() + ")scale(" + toolSetService.getZoomScale() + ")");
+                /*                    .each("end", function () {
+                                        // interpolateZoom(zoom.translate(),zoom.scale());
+                                    });*/
+            }
+
             scope.$on('$destroy', destroyListener);
+
             function destroyListener() {
                 nodeActiveClearListener();
                 nodeDeleteListener();
+                nodeAfterAddListener();
+                nodeAfterUpdateListener();
             }
         }
 
@@ -858,30 +1200,12 @@
         var vm = this;
         vm.makeCallBack = makeCallBack;
 
-        function makeCallBack(identifier) {
+        console.log(vm.searchableList);
+
+        function makeCallBack(identifier, node) {
             console.log('called treeview call back abn');
-            $scope.vm[identifier]();
+            $scope.vm[identifier]({node: node});
         }
 
-        /*        function onInit() {
-         $scope.$watch(function () {
-         return treeViewService.getSearchedNode();
-         }, function (node) {
-         console.log(node);
-         });
-         }
-
-         onInit();*/
-        /*        var searchListener = $rootScope.$on('chart:hierarchy:search', onSearch);
-
-         function onSearch(node) {
-         console.log(node);
-         }
-
-
-         $rootScope.$on('$destroy', destroyListener);
-         function destroyListener() {
-         searchListener();
-         }*/
     }
 })();

@@ -1,5 +1,5 @@
 <div layout-align="start center" layout="row" layout-fill>
-    <div flex-offset="5">
+    <div flex-offset="5" style="width:430px">
         <md-autocomplete
             style="margin-top: 20px"
             ng-disabled="vm.isDisabled"
@@ -9,11 +9,11 @@
             md-search-text="vm.searchText"
             md-selected-item-change="vm.selectedItemChange(item)"
             md-items="item in vm.querySearch(vm.searchText)"
-            md-item-text="item.display"
+            md-item-text="item.name"
             md-min-length="0"
             placeholder="Search People">
             <md-item-template>
-                <span md-highlight-text="ctrl.searchText" md-highlight-flags="^i">{{item.display}}</span>
+                <span md-highlight-text="ctrl.searchText" md-highlight-flags="^i">{{item.name}}</span>
             </md-item-template>
             <md-not-found>
                 No states matching "{{ctrl.searchText}}" were found.

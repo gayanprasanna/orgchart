@@ -1,7 +1,7 @@
 .toolset-wrapper {
     position: fixed;
     right: 23px;
-    top: 450px;
+    top: 70%;
 }
 
 .toolset-btn {
@@ -29,4 +29,8 @@
 
 .toolset-btn:hover {
     background-color: #c8dbe8;
+}
+
+.custom-font-icon{
+  line-height: 24px;
 }

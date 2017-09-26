@@ -1,6 +1,9 @@
 @import "../scss/colors";
 
 .round-chip-wrapper {
+/*  top: -38px;
+  left: 84px;
+  position: fixed;*/
   margin-top:-150%;
 }
 
@@ -20,12 +23,15 @@ img.round-chip {
   width: 240px;
   height: 146px;
   font-size: 12px;
-  padding: 3px 5px;
+  padding: 3px 0px;
   display: inline-block;
   word-wrap: break-word;
   background: $white-color;
-  border: 1px solid transparent;
+  border-bottom: 1px solid transparent;
   box-shadow: 0 4px 2px 0px rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  -webkit-box-sizing: initial;
+  -moz-box-sizing: initial;
+  box-sizing: initial;
 }
 
 .node-label:hover {
@@ -86,7 +92,7 @@ path.link {
   background-color: #eeeaea; /* Gray */
   border: none;
   color: #0380af;
-  padding: 15px 20px;
+  //padding: 20px 16px;
   text-align: center;
   text-decoration: none;
   display: inline-block;
@@ -94,8 +100,18 @@ path.link {
   -webkit-transition-duration: 0.4s; /* Safari */
   transition-duration: 0.4s;
   cursor: pointer;
+  width: 57px;
+  height: 50px;
 }
 
 .action-btn:hover {
   background-color: #c8dbe8;
+}
+
+.node-text-main-no-image{
+  margin-top:28px !important;
+}
+
+.node-text-sub-no-image{
+  margin-bottom:20px !important;
 }

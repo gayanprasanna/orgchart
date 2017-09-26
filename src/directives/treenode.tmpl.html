@@ -1,7 +1,24 @@
+<!--<div ng-class="{'active-node':vm.isActive}" class="{{vm.nodeClass}}" ng-mouseenter="vm.whenMouseEnter()"
+     ng-mouseleave="vm.whenMouseLeave()" ng-click="vm.makeNodeActive()">
+    <div layout="column" layout-align="center center">
+        <div class="md-subhead">Some Text</div>
+        <div>
+            <div class=""><img ng-src="assets/images/avatars/flasher.thumb.jpg" class="round-chip"></div>
+        </div>
+        <div class="md-subhead">{{vm.node.name}}</div>
+        <div layout-align="center center" layout-fill class="action-area" layout="row" ng-show="vm.isExpandedView">
+            <div ng-repeat="action in vm.nodeActions">
+                <button ng-click="vm.makeCallBack(action.callBack)"><span ng-bind="action.name"></span>&nbsp;<i
+                    class="{{action.icon}}"></i></button>
+            </div>
+        </div>
+    </div>
+
+</div>-->
 <div ng-class="{'active-node':vm.isActive}" class="{{vm.nodeClass}}" ng-mouseenter="vm.whenMouseEnter()"
      ng-mouseleave="vm.whenMouseLeave()" ng-click="vm.makeNodeActive()">
     <div layout="column" layout-align="center center">
-        <div class="md-subhead node-text-main">CEO</div>
+        <div class="md-subhead node-text-main">{{vm.node.name}}</div>
         <div>
             <div class="round-chip-wrapper"><img ng-src="assets/images/avatars/flasher.thumb.jpg" class="round-chip">
             </div>
@@ -9,8 +26,8 @@
         <div class="md-subhead node-text-sub">{{vm.node.name}}</div>
         <div layout-align="center center" layout-fill layout="row">
             <div ng-repeat="action in vm.nodeActions">
-                <button ng-click="vm.makeCallBack(action.callBack)" class="action-btn"><span></span>&nbsp;<i
-                        class="{{action.icon}}"></i></button>
+                <button ng-click="vm.makeCallBack(action.callBack); $event.stopPropagation();" class="action-btn"><span></span>&nbsp;<i
+                    class="{{action.icon}}"></i></button>
             </div>
         </div>
     </div>
