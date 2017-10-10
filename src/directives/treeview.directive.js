@@ -9,6 +9,7 @@
     function treeView($filter, $compile, treeViewService, $timeout, toolSetService, $window) {
         var treeViewDirective = {
             replace: 'false',
+            templateNamespace: 'svg',
             restrict: 'E',
             scope: {},
             bindToController: {
@@ -37,7 +38,7 @@
                 horizontalSeperation: 16,
                 verticalSeperation: 128
             };
-            var dragStarted=false;
+            var dragStarted = false;
             var nodes;
             var domNode;
             var relCoords;
@@ -78,6 +79,15 @@
                 .scale(toolSetService.getZoomScale())
                 .scaleExtent([0.3, 8])
                 .on("zoom", zoomed);
+
+            vm.wordTrimOptions = {
+                word: 'd',
+                from: '0',
+                until: '12',
+                toolTip: 'true',
+                toolTipDirection: 'top'
+            };
+
             /*
                         var zoomObject = d3.behavior.zoom()
                             .translate([0, 0])
@@ -193,7 +203,7 @@
 
             // Define the drag listeners for drag/drop behaviour of nodes.
             dragListener = d3.behavior.drag()
-                .on("dragstart", function(d) {
+                .on("dragstart", function (d) {
                     if (d == root) {
                         return;
                     }
@@ -202,7 +212,7 @@
                     d3.event.sourceEvent.stopPropagation();
                     // it's important that we suppress the mouseover event on the node being dragged. Otherwise it will absorb the mouseover event and the underlying node will not detect it d3.select(this).attr('pointer-events', 'none');
                 })
-                .on("drag", function(d) {
+                .on("drag", function (d) {
                     if (d == root) {
                         return;
                     }
@@ -239,7 +249,7 @@
 
                     node.attr("transform", "translate(" + d.x0 + "," + d.y0 + ")");
                     updateTempConnector();
-                }).on("dragend", function(d) {
+                }).on("dragend", function (d) {
                     if (d == root) {
                         return;
                     }
@@ -268,12 +278,13 @@
                         endDrag();
                     }
                 });
+
             function initiateDrag(d, domNode) {
                 draggingNode = d;
                 d3.select(domNode).select('.ghost-area').attr('pointer-events', 'none');
                 d3.selectAll('.ghost-area').attr('class', 'ghost-area show');
                 d3.select(domNode).attr('class', 'node active-drag');
-                vis.selectAll("g.node").sort(function(a, b) { // select the parent and sort the path's
+                vis.selectAll("g.node").sort(function (a, b) { // select the parent and sort the path's
                     if (a.id != draggingNode.id) return 1; // a is not the hovered element, send "a" to the back
                     else return -1; // a is the hovered element, bring "a" to the front
                 });
@@ -282,14 +293,14 @@
                     // remove link paths
                     links = tree.links(nodes);
                     nodePaths = vis.selectAll("path.link")
-                        .data(links, function(d) {
+                        .data(links, function (d) {
                             return d.target.id;
                         }).remove();
                     // remove child nodes
                     nodesExit = vis.selectAll("g.node")
-                        .data(nodes, function(d) {
+                        .data(nodes, function (d) {
                             return d.id;
-                        }).filter(function(d, i) {
+                        }).filter(function (d, i) {
                             if (d.id == draggingNode.id) {
                                 return false;
                             }
@@ -298,7 +309,7 @@
                 }
                 // remove parent link
                 parentLink = tree.links(tree.nodes(draggingNode.parent));
-                vis.selectAll('path.link').filter(function(d, i) {
+                vis.selectAll('path.link').filter(function (d, i) {
                     if (d.target.id == draggingNode.id) {
                         return true;
                     }
@@ -306,6 +317,7 @@
                 }).remove();
                 dragStarted = null;
             }
+
             function pan(domNode, direction) {
                 var speed = panSpeed;
                 var translateX;
@@ -330,24 +342,26 @@
                     d3.select(domNode).select('g.node').attr("transform", "translate(" + translateX + "," + translateY + ")");
                     zoom.scale(scale);
                     zoom.translate([translateX, translateY]);
-                    panTimer = setTimeout(function() {
+                    panTimer = setTimeout(function () {
                         pan(domNode, speed, direction);
                     }, 50);
                 }
             }
+
             // Function to update the temporary connector indicating dragging affiliation
-            var updateTempConnector = function() {
+            function updateTempConnector() {
                 var data = [];
                 if (draggingNode !== null && selectedNode !== null) {
                     // have to flip the source coordinates since we did this for the existing connectors on the original tree
+                     var extendingValue = (vm.imagepresent)?5:50;
                     data = [{
                         source: {
-                            x: selectedNode.x0 +(nodeBoundaries.width/2),
-                            y: selectedNode.y0+nodeBoundaries.height+10
+                            x: selectedNode.x0+12 + (nodeBoundaries.width / 2),
+                            y: selectedNode.y0+50 + nodeBoundaries.height + 10
                         },
                         target: {
-                            x: draggingNode.x0+(nodeBoundaries.width/2),
-                            y: draggingNode.y0
+                            x: draggingNode.x0+12 + (nodeBoundaries.width / 2),
+                            y: draggingNode.y0+extendingValue
                         }
                     }];
                 }
@@ -360,12 +374,12 @@
                 link.exit().remove();
             };
 
-            var overInGhostArea = function(d) {
+            var overInGhostArea = function (d) {
                 selectedNode = d;
                 updateTempConnector();
             };
 
-            var outOfGhostArea = function(d) {
+            var outOfGhostArea = function (d) {
                 selectedNode = null;
                 updateTempConnector();
             };
@@ -392,12 +406,16 @@
                 .call(function () {
                     // $compile(this[0])(scope);
                 })
-                .append("div").attr("flex", "").call(function () {
+                .append("div")
+                .attr("flex", "")
+                .attr("id", "svg-box-container")
+                .call(function () {
                     // $compile(this[0])(scope);
                 })
-                .append("svg:svg")
+                .append("svg")
+                .attr("id", "svgBox")
                 .attr("viewBox", viewBoxBoundary)
-                .attr("style","cursor:move;")
+                .attr("style", "cursor:move;")
                 .attr("width", "100%")
                 .attr("height", iHeight)
                 /*                .call(d3.behavior.zoom().on("zoom", function () {
@@ -553,9 +571,14 @@
                 // Compute the new tree layout.
                 var nodes = tree.nodes(root).reverse();
 
-                // Normalize for fixed-depth.
+                // Normalize for fixed-depth and dynamic for weight.
                 nodes.forEach(function (d) {
-                    d.y = d.depth * 300;
+                    if (d.weight) {
+                        d.y = (d.weight * 12) + d.depth * 300;
+                    } else {
+                        d.y = d.depth * 300;
+                    }
+
                 });
 
                 // Update the nodes...
@@ -584,40 +607,68 @@
                 nodeEnter.append("rect")
                     .attr('class', 'ghost-area')
                     .attr("width", nodeBoundaries.width)
-                    .attr("height", nodeBoundaries.height+150)
+                    .attr("height", nodeBoundaries.height + 250)
                     .attr("opacity", 0.2) // change this to zero to hide the target area
                     .style("fill", "transparent")
                     .attr('pointer-events', 'mouseover')
-                    .on("mouseover", function(node) {
+                    .on("mouseover", function (node) {
                         overInGhostArea(node);
                     })
-                    .on("mouseout", function(node) {
+                    .on("mouseout", function (node) {
                         outOfGhostArea(node);
                     });
 
                 var nodeText = nodeEnter
-                    .append("svg:foreignObject")
+                    /*.append("svg:foreignObject")
                     .attr("text-anchor", function (d) {
                         return d.children || d._children ? "end" : "start";
                     })
                     .style("fill-opacity", 1e-6)
-                    // .style("overflow", "visible")
+                    .style("overflow", "visible")
+                    .attr({
+                        'width': nodeBoundaries.width,
+                        'height': nodeBoundaries.height,
+                        'class': 'foreign-object'
+                    })*/
+
                     // .classed("of",function(){return true;})
-                    .attr('width', nodeBoundaries.width)
-                    .attr('height', nodeBoundaries.height)
-                    .append('xhtml:div')
+/*                    .attr('width', nodeBoundaries.width)
+                    .attr('height', nodeBoundaries.height)*/
+/*                    .append('xhtml:div')
                     .classed("disabled", function (d) {
                         return d.enable !== undefined && !d.enable;
-                    }).on("click", onClickedNode)/*.call(d3.behavior.drag().on("dragstart", function () {
+                    }).on("click", onClickedNode)*//*.call(d3.behavior.drag().on("dragstart", function () {
                  d3.event.sourceEvent.stopPropagation();
                  }).on("drag", function () {
                  console.log("dragged");
                  }))*/;
 
+                /*nodeText.append("div")
+                    .attr("ng-class","{'active-node':vm.isActive}")
+                    .attr("class","{{vm.nodeClass}}")
+                    .attr("ng-mouseenter","vm.whenMouseEnter()")
+                    .attr("ng-mouseleave","vm.whenMouseLeave()")
+                    .attr("ng-click","vm.makeNodeActive()")
+
+                    .append("div")
+                    .attr("layout","column")
+                    .attr("layout-align","center center")
+                    .attr("layout-align","center center")
+
+                    .append("div")
+                    .attr("ng-class","{'node-text-main-no-image':!vm.isImagePresent}")
+                    .attr("class","md-subhead node-text-main")*/
+
+                    // .append($compile('<div ng-class="{\'active-node\':vm.isActive}" class="{{vm.nodeClass}}" ng-mouseenter="vm.whenMouseEnter()" ng-mouseleave="vm.whenMouseLeave()" ng-click="vm.makeNodeActive()"> <div layout="column" layout-align="center center"> <div ng-class="{\'node-text-main-no-image\':!vm.imagepresent}" class="md-subhead node-text-main"><trim-word word-options ="vm.wordTrimOptions" word="d.name"></trim-word></div><div> <div class="round-chip-wrapper"><img ng-if="vm.imagepresent" ng-src="{{d.image_url}}" class="round-chip"> </div></div><div  ng-class="{\'node-text-sub-no-image\':!vm.imagepresent}" class="md-subhead node-text-sub">{{d.name}}</div><div layout-align="center center" layout-fill layout="row"> <div ng-repeat="action in vm.nodeActions"> <button ng-click="vm.makeCallBack(action.callBack); $event.stopPropagation();" class="action-btn"><span></span>&nbsp;<i class="{{action.icon}}"></i></button> </div></div></div></div>')(scope))
+
+
+
                 nodeText.append("tree-node").attr("node", function (d) {
                     treeViewService.pushNode(d);
                     return "";
-                }).attr("nodeId", function (d) {
+                })
+                .on("click", onClickedNode)
+                .attr("nodeId", function (d) {
                     return d.id;
                 }).attr("imagePresent", function (d) {
                     return vm.imagepresent;
@@ -670,6 +721,7 @@
                 // Enter any new links at hte parent's previous position
                 link.enter().insert("svg:path", "g")
                     .attr("class", "link")
+                    // .style("stroke-dasharray",("3,3"))
                     .attr("d", function (d) {
                         var o = {
                             x: source.x0,
@@ -682,7 +734,7 @@
                     })
                     .transition()
                     .duration(duration)
-                    .attr("d", diagonal);
+                    .attr("d", generatePath);
                 /*                    .attr("d", function (d) {
                                         return "M" + d.source.y + "," + d.source.x
                                             + "C" + (d.target.y + 100) + "," + d.source.x
@@ -690,10 +742,32 @@
                                             + " " + d.target.y + "," + d.target.x;
                                     });*/
 
+                /*
+                                // Enter any Indirect links at hte parent's previous position
+                                link.each(function(d,i){
+                                    return (d.indirect)?true:false;
+                                }).enter().insert("svg:path", "g")
+                                    .attr("class", "link")
+                                    .style("stroke-dasharray",("3,3"))
+                                    .attr("d", function (d) {
+                                        var o = {
+                                            x: source.x0,
+                                            y: source.y0
+                                        };
+                                        return diagonal({
+                                            source: o,
+                                            target: o
+                                        });
+                                    })
+                                    .transition()
+                                    .duration(duration)
+                                    .attr("d", generatePath);
+                */
+
                 // Transition links to their new position.
                 link.transition()
                     .duration(duration)
-                    .attr("d", diagonal)
+                    .attr("d", generatePath)
                     /*                    .attr("class",function (d) {
                      return (d.target.class === "highlight-link")?"highlight-link-stroke-active":"highlight-link-stroke-inactive";
                      });*/
@@ -701,11 +775,15 @@
                         if (d.target.class === "highlight-link") {
                             return "#ff4136";
                         }
-                    });
+                    }).style("z-index",function(d){
+                    if (d.target.class === "highlight-link") {
+                        return "2000";
+                    }
+                });
 
                 // Transition exiting nodes to the parent's new position.
                 link.exit().transition()
-                    .duration(duration)
+                    .duration(0)
                     .attr("d", function (d) {
                         var o = {
                             x: source.x,
@@ -762,57 +840,102 @@
 //             }
 
             function determineNodeRelativeLocation(d) {
-                if (d.source.x == d.target.x) {
-                    return 'straight';
-                } else if (d.source.x > d.target.x) {
+                if (d.source.children.length > 1 && d.source.children[0] == d.target) {
                     return 'onleft';
-                } else {
+                } else if (d.source.children.length > 1 && d.source.children[d.source.children.length - 1] == d.target) {
                     return 'onright';
+                } else {
+                    return 'straight';
                 }
             }
 
             function generatePath(d) {
+                /*
+                                    return "M"
+                                        + (d.source.x+(nodeBoundaries.width/2))
+                                        + ","
+                                        + (d.source.y+nodeBoundaries.height)
+                                        + "V"
+                                        + (d.source.y+nodeBoundaries.height+(nodeBoundaries.height/2))
+                                        + "H" + (d.target.x+((nodeBoundaries.width)/2)-8)
+                                        + " Q " + ((d.target.x+((nodeBoundaries.width)/2)-8) + 8) + "," + (d.source.y+nodeBoundaries.height+(nodeBoundaries.height/2))
+                                        + " " + ((d.target.x+((nodeBoundaries.width)/2)-8) + 8) + "," + (d.source.y+nodeBoundaries.height+(nodeBoundaries.height/2)+8)
+                                        // + " " + (((d.source.x - 8) - ((d.target.x - d.source.x) - 120)) - 8) + "," + (((d.source.y + 10) + 8) + 8)
+                                        + "V" + d.target.y
+                                        +"M"+d.target.x+","+d.target.y;
+                */
                 var relativeLocation = determineNodeRelativeLocation(d);
                 var pathString = '';
 
                 switch (relativeLocation) {
                     case 'straight':
-                        pathString += "M " + d.source.x + "," + d.source.y
-                            + " L " + d.source.x + "," + (d.target.y - d.source.y)
-                            + " M " + d.source.x + "," + (d.target.y - d.source.y);
+                        pathString += "M"
+                            + (d.source.x + (nodeBoundaries.width / 2)+12)
+                            + ","
+                            + (d.source.y + nodeBoundaries.height+55)
+                            + "V"
+                            + (d.source.y + nodeBoundaries.height + (nodeBoundaries.height / 2)+35)
+                            + "H" + (d.target.x+12 + ((nodeBoundaries.width) / 2))
+                            + "V" + (d.target.y+50)
+                            + "M" + d.target.x+12 + "," + (d.target.y+50);
                         break;
                     case 'onleft':
-                        pathString += "M " + d.source.x + "," + d.source.y
-                            + " L " + d.source.x + "," + (d.source.y + 10)
-                            + " Q " + d.source.x + "," + ((d.source.y + 10) + 8)
-                            + " " + (d.source.x - 8) + "," + ((d.source.y + 10) + 8)
-                            + " L " + ((d.source.x - 8) - ((d.target.x - d.source.x) - 120)) + "," + ((d.source.y + 10) + 8)
-                            + " Q " + (((d.source.x - 8) - ((d.target.x - d.source.x) - 120)) - 8) + "," + ((d.source.y + 10) + 8)
-                            + " " + (((d.source.x - 8) - ((d.target.x - d.source.x) - 120)) - 8) + "," + (((d.source.y + 10) + 8) + 8)
-                            + " L " + (((d.source.x - 8) - ((d.target.x - d.source.x) - 120)) - 8) + "," + ((d.target.y - d.source.y))
-                            /*+ "C" + (d.source.x + d.target.x) / 2 + "," + d.source.y
-                            + " " + (d.source.x + d.target.x) / 2 + "," + d.target.y*/
-                            // + " M " + (((d.source.x - 8) - ((d.target.x-d.source.x)-120)) - 8) + "," + ((d.target.y-d.source.y));
-                            + " M " + d.target.x + "," + d.target.y;
+                        pathString += "M"
+                            + (d.source.x + (nodeBoundaries.width / 2)+12)
+                            + ","
+                            + (d.source.y + nodeBoundaries.height+55)
+                            + "V"
+                            + (d.source.y + nodeBoundaries.height + (nodeBoundaries.height / 2)+35)
+                            + "H" + (d.target.x+12 + ((nodeBoundaries.width) / 2) + 8)
+                            + " Q " + ((d.target.x+12 + ((nodeBoundaries.width) / 2) - 8) + 8) + "," + (d.source.y + nodeBoundaries.height + (nodeBoundaries.height / 2)+35)
+                            + " " + ((d.target.x+12 + ((nodeBoundaries.width) / 2) - 8) + 8) + "," + (d.source.y + nodeBoundaries.height + (nodeBoundaries.height / 2) + 8+35)
+                            + "V" + (d.target.y+50)
+                            + "M" + d.target.x+12 + "," + (d.target.y+50);
                         break;
                     case 'onright':
-                        pathString += "M " + d.source.x + "," + d.source.y
-                            + " L " + d.source.x + "," + (d.source.y + 10)
-                            + " Q " + d.source.x + "," + ((d.source.y + 10) + 8)
-                            + " " + (d.source.x + 8) + "," + ((d.source.y + 10) + 8)
-                            + " L " + ((d.source.x + 8) - ((d.target.x - d.source.x) - 120)) + "," + ((d.source.y + 10) + 8)
-                            + " Q " + (((d.source.x + 8) - ((d.target.x - d.source.x) - 120)) + 8) + "," + ((d.source.y + 10) + 8)
-                            + " " + (((d.source.x + 8) - ((d.target.x - d.source.x) - 120)) + 8) + "," + (((d.source.y + 10) + 8) + 8)
-                            + " L " + (((d.source.x + 8) - ((d.target.x - d.source.x) - 120)) + 8) + "," + ((d.target.y - d.source.y))
-                            /*+ "C" + (d.source.x + d.target.x) / 2 + "," + d.source.y
-                            + " " + (d.source.x + d.target.x) / 2 + "," + d.target.y*/
-                            + " M " + (((d.source.x + 8) - ((d.target.x - d.source.x) - 120)) + 8) + "," + ((d.target.y - d.source.y));
+                        pathString += "M"
+                            + (d.source.x+12 + (nodeBoundaries.width / 2))
+                            + ","
+                            + (d.source.y + nodeBoundaries.height+55)
+                            + "V"
+                            + (d.source.y + nodeBoundaries.height + (nodeBoundaries.height / 2)+35)
+                            + "H" + (d.target.x+12 + ((nodeBoundaries.width) / 2) - 8)
+                            + " Q " + ((d.target.x+12 + ((nodeBoundaries.width) / 2)) ) + "," + (d.source.y + nodeBoundaries.height + (nodeBoundaries.height / 2)+35)
+                            + " " + ((d.target.x+12 + ((nodeBoundaries.width) / 2))) + "," + (d.source.y + nodeBoundaries.height + (nodeBoundaries.height / 2) + 8+35)
+                            + "V" + (d.target.y+50)
+                            + "M" + d.target.x+12 + "," + (d.target.y+50);
                         break;
                 }
 
                 return pathString;
             }
 
+            function saveAsPDF(){
+                var  svg = document.getElementById("svg-box-container").innerHTML;
+                if (vis){
+                     svg = svg.replace(/\r?\n|\r/g, '').trim();
+                }
+
+
+                var canvas = document.createElement('canvas');
+                var context = canvas.getContext('2d');
+
+
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                canvg(canvas, svg);
+
+
+                var imgData = canvas.toDataURL('image/png');
+
+                // Generate PDF
+                var doc = new jsPDF('p', 'pt', 'a4');
+                doc.addImage(imgData, 'PNG', 40, 40, 75, 75);
+                doc.save('test.pdf');
+            }
+
+            $timeout(function () {
+                // saveAsPDF();
+            },300);
             function transform(d) {
                 return "translate(" + x(d.y) + "," + y(d.x) + ")";
             }
@@ -1174,13 +1297,14 @@
                 // zoomWithTween();
             }
 
-            function zoomWithTween(){
+            function zoomWithTween() {
                 vis.transition()
                     .attr("transform", "translate(" + zoom.translate() + ")scale(" + toolSetService.getZoomScale() + ")");
                 /*                    .each("end", function () {
                                         // interpolateZoom(zoom.translate(),zoom.scale());
                                     });*/
             }
+
 
             scope.$on('$destroy', destroyListener);
 
@@ -1191,6 +1315,7 @@
                 nodeAfterUpdateListener();
             }
         }
+
 
         return treeViewDirective;
     }

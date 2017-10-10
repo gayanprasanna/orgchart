@@ -4,17 +4,8 @@
     <list default="true" id="4a3cf603-4ca2-4798-b871-bbd2fb8dd327" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dist/js/bundle.js" afterPath="$PROJECT_DIR$/dist/js/bundle.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dist/styles/style.css" afterPath="$PROJECT_DIR$/dist/styles/style.css" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/directives/searchbox.directive.js" afterPath="$PROJECT_DIR$/src/directives/searchbox.directive.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/directives/searchbox.tmpl.html" afterPath="$PROJECT_DIR$/src/directives/searchbox.tmpl.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/directives/toolset.directive.js" afterPath="$PROJECT_DIR$/src/directives/toolset.directive.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/directives/toolset.scss" afterPath="$PROJECT_DIR$/src/directives/toolset.scss" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/directives/toolset.service.js" afterPath="$PROJECT_DIR$/src/directives/toolset.service.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/directives/treenode.directive.js" afterPath="$PROJECT_DIR$/src/directives/treenode.directive.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/directives/treenode.scss" afterPath="$PROJECT_DIR$/src/directives/treenode.scss" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/directives/treenode.tmpl.html" afterPath="$PROJECT_DIR$/src/directives/treenode.tmpl.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/directives/treeview.directive.js" afterPath="$PROJECT_DIR$/src/directives/treeview.directive.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/directives/treeview.scss" afterPath="$PROJECT_DIR$/src/directives/treeview.scss" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -31,7 +22,7 @@
       <file leaf-file-name="treenode.scss" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/directives/treenode.scss">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="18">
+            <state relative-caret-position="0">
               <caret line="24" column="18" lean-forward="false" selection-start-line="24" selection-start-column="18" selection-end-line="24" selection-end-column="18" />
               <folding />
             </state>
@@ -41,8 +32,8 @@
       <file leaf-file-name="treeview.scss" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/directives/treeview.scss">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="314">
-              <caret line="80" column="14" lean-forward="true" selection-start-line="80" selection-start-column="14" selection-end-line="80" selection-end-column="14" />
+            <state relative-caret-position="1440">
+              <caret line="80" column="14" lean-forward="false" selection-start-line="80" selection-start-column="14" selection-end-line="80" selection-end-column="14" />
               <folding />
             </state>
           </provider>
@@ -51,28 +42,9 @@
       <file leaf-file-name="treeview.directive.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/directives/treeview.directive.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="512">
-              <caret line="1211" column="0" lean-forward="true" selection-start-line="1211" selection-start-column="0" selection-end-line="1211" selection-end-column="0" />
-              <folding>
-                <element signature="e#292#843#0" expanded="false" />
-                <element signature="e#3445#3496#0" expanded="false" />
-                <element signature="e#3539#3654#0" expanded="false" />
-                <element signature="e#3693#4066#0" expanded="false" />
-                <element signature="e#5637#6044#0" expanded="false" />
-                <element signature="e#14097#15149#0" expanded="false" />
-                <element signature="e#15459#16042#0" expanded="false" />
-                <element signature="e#36692#37202#0" expanded="false" />
-                <element signature="e#37265#37782#0" expanded="false" />
-                <element signature="e#37837#38646#0" expanded="false" />
-                <element signature="e#38685#38902#0" expanded="false" />
-                <element signature="e#38944#39003#0" expanded="false" />
-                <element signature="e#39618#40170#0" expanded="false" />
-                <element signature="e#40214#40740#0" expanded="false" />
-                <element signature="e#40789#41129#0" expanded="false" />
-                <element signature="e#41174#41328#0" expanded="false" />
-                <element signature="e#41431#42655#0" expanded="false" />
-                <element signature="e#49487#49666#0" expanded="false" />
-              </folding>
+            <state relative-caret-position="90">
+              <caret line="617" column="45" lean-forward="true" selection-start-line="617" selection-start-column="45" selection-end-line="617" selection-end-column="45" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -127,6 +99,7 @@
       <find>nodePaths</find>
       <find>nodesExit</find>
       <find>parentLink</find>
+      <find>gene</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -229,7 +202,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../nodejs" />
     <property name="HbShouldOpenHtmlAsHb" value="" />
     <property name="nodejs_interpreter_path" value="/usr/bin/node" />
     <property name="list.type.of.created.stylesheet" value="CSS" />
@@ -355,27 +328,33 @@
       <workItem from="1506051983866" duration="1461000" />
       <workItem from="1506312904336" duration="1463000" />
       <workItem from="1506399024150" duration="7883000" />
-      <workItem from="1506423328678" duration="130000" />
+      <workItem from="1506423328678" duration="1426000" />
+      <workItem from="1506485064602" duration="625000" />
+      <workItem from="1506593182419" duration="2808000" />
+      <workItem from="1506919616699" duration="2200000" />
+      <workItem from="1507002891263" duration="3316000" />
+      <workItem from="1507188078701" duration="625000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="97831000" />
+    <option name="totallyTimeSpent" value="108701000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="-4" width="1366" height="729" extended-state="6" />
+    <frame x="0" y="-4" width="1368" height="737" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="Gulp" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24944155" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24944155" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.8566667" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="npm" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.8566667" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24944155" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32833335" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -424,13 +403,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/directives/treenode.tmpl.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="288">
-          <caret line="16" column="6" lean-forward="false" selection-start-line="16" selection-start-column="6" selection-end-line="16" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/dist/styles/style.css">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="36">
@@ -721,9 +693,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="216">
           <caret line="12" column="27" lean-forward="false" selection-start-line="12" selection-start-column="27" selection-end-line="12" selection-end-column="27" />
-          <folding>
-            <marker date="1505466466000" expanded="true" signature="1404:1410" ph=" " />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -765,44 +735,33 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/directives/treeview.scss">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="314">
-          <caret line="80" column="14" lean-forward="true" selection-start-line="80" selection-start-column="14" selection-end-line="80" selection-end-column="14" />
+        <state relative-caret-position="1440">
+          <caret line="80" column="14" lean-forward="false" selection-start-line="80" selection-start-column="14" selection-end-line="80" selection-end-column="14" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/directives/treenode.scss">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="18">
+        <state relative-caret-position="0">
           <caret line="24" column="18" lean-forward="false" selection-start-line="24" selection-start-column="18" selection-end-line="24" selection-end-column="18" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../nodejs/test.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1188">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/directives/treeview.directive.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="512">
-          <caret line="1211" column="0" lean-forward="true" selection-start-line="1211" selection-start-column="0" selection-end-line="1211" selection-end-column="0" />
-          <folding>
-            <element signature="e#292#843#0" expanded="false" />
-            <element signature="e#3445#3496#0" expanded="false" />
-            <element signature="e#3539#3654#0" expanded="false" />
-            <element signature="e#3693#4066#0" expanded="false" />
-            <element signature="e#5637#6044#0" expanded="false" />
-            <element signature="e#14097#15149#0" expanded="false" />
-            <element signature="e#15459#16042#0" expanded="false" />
-            <element signature="e#36692#37202#0" expanded="false" />
-            <element signature="e#37265#37782#0" expanded="false" />
-            <element signature="e#37837#38646#0" expanded="false" />
-            <element signature="e#38685#38902#0" expanded="false" />
-            <element signature="e#38944#39003#0" expanded="false" />
-            <element signature="e#39618#40170#0" expanded="false" />
-            <element signature="e#40214#40740#0" expanded="false" />
-            <element signature="e#40789#41129#0" expanded="false" />
-            <element signature="e#41174#41328#0" expanded="false" />
-            <element signature="e#41431#42655#0" expanded="false" />
-            <element signature="e#49487#49666#0" expanded="false" />
-          </folding>
+        <state relative-caret-position="90">
+          <caret line="617" column="45" lean-forward="true" selection-start-line="617" selection-start-column="45" selection-end-line="617" selection-end-column="45" />
+          <folding />
         </state>
       </provider>
     </entry>
