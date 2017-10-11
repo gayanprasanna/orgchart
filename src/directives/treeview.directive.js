@@ -60,6 +60,7 @@
             var nodeAfterAddListener;
             var nodeAfterUpdateListener;
             var dragListener;
+
             var nodeList = [];
             var m = [20, 20, 20, 20],
                 w = $window.innerWidth - 20 - m[1] - m[3],
@@ -88,18 +89,16 @@
                 toolTipDirection: 'top'
             };
 
-            /*
-                        var zoomObject = d3.behavior.zoom()
-                            .translate([0, 0])
-                            .scale(toolSetService.getZoomScale())
-                            .scaleExtent([0.3, 8])
-                            .on("zoom", zoomedWrapper);*/
-
-            // zoom();
             elem.append($compile("<div class='component-container'><div layout=\"row\" layout-align=\"space-around center\"><div flex><tree-search-box searchable-list='vm.searchableList'></tree-search-box></div><div flex><tree-tool-set zoom-trigger-call-back='vm.zoomTrigger(status)'></tree-tool-set></div></div></div>")(scope));
 
             vm.zoomTrigger = zoomTrigger;
 
+            /*Listeners*/
+
+            nodeActiveClearListener = scope.$on('app:nodes:clearactive', onDeactivateNodes);
+            nodeDeleteListener = scope.$on('app:nodes:delete', onNodeDelete);
+            nodeAfterAddListener = scope.$on('app:nodes:add::after', onNodeAfterAdd);
+            nodeAfterUpdateListener = scope.$on('app:nodes:update::after', onNodeAfterUpdate);
 
             function zoomTrigger(status) {
                 console.log(status);
@@ -133,7 +132,6 @@
                 forceScale(0.5);
                 toolSetService.setZoomScale(0.5);
                 centerTheRoot();
-                // forceZoom();
                 expandAll();
             }
 
@@ -169,27 +167,6 @@
 
                     }
                 });
-            }
-
-            function onZoomWatch() {
-                scope.$watch(function () {
-                    return toolSetService.getZoomScale();
-                }, function (zoomScale) {
-                    console.log(zoomScale);
-                    vis.transition()
-                        .duration(750)
-                        .call(zoomObject.translate([150, 100]).scale(zoomScale).scaleExtent([1, 8]).event);
-                });
-
-            }
-
-            function forceZoom() {
-                var zoomScale = toolSetService.getZoomScale();
-                console.log(zoomScale);
-                vis.transition()
-                    .duration(750)
-                    .call(zoomObject.translate([0, 0]).scale(zoomScale).scaleExtent([0.3, 8]).event);
-
             }
 
             function forceScale(scale) {
@@ -353,15 +330,15 @@
                 var data = [];
                 if (draggingNode !== null && selectedNode !== null) {
                     // have to flip the source coordinates since we did this for the existing connectors on the original tree
-                     var extendingValue = (vm.imagepresent)?5:50;
+                    var extendingValue = (vm.imagepresent) ? 5 : 50;
                     data = [{
                         source: {
-                            x: selectedNode.x0+12 + (nodeBoundaries.width / 2),
-                            y: selectedNode.y0+50 + nodeBoundaries.height + 10
+                            x: selectedNode.x0 + 12 + (nodeBoundaries.width / 2),
+                            y: selectedNode.y0 + 50 + nodeBoundaries.height + 10
                         },
                         target: {
-                            x: draggingNode.x0+12 + (nodeBoundaries.width / 2),
-                            y: draggingNode.y0+extendingValue
+                            x: draggingNode.x0 + 12 + (nodeBoundaries.width / 2),
+                            y: draggingNode.y0 + extendingValue
                         }
                     }];
                 }
@@ -403,9 +380,6 @@
             var vis = wrapperElement.append("div")
                 .attr("layout", "row")
                 .attr("layout-align", "space-around center")
-                .call(function () {
-                    // $compile(this[0])(scope);
-                })
                 .append("div")
                 .attr("flex", "")
                 .attr("id", "svg-box-container")
@@ -418,98 +392,43 @@
                 .attr("style", "cursor:move;")
                 .attr("width", "100%")
                 .attr("height", iHeight)
-                /*                .call(d3.behavior.zoom().on("zoom", function () {
-                                    toolSetService.setZoomScale(d3.event.scale);
-                                    scope.$apply();
-                                    console.log(d3.event.scale);
-                                    if(d3.event.scale>0.5){
-                                        // vis.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")")
-                                    }
-
-                                    // vis.attr("transform", "translate(" + d3.event.translate + ")");
-                                }))*/
                 .call(zoom)
-                // .call(zoomObject)
                 .append("svg:g")
-                //.attr("pointer-events", "all")
                 //centering the root node
                 .attr("transform", "translate(" + (($window.innerWidth / 2) - 120) + "," + (h / 4) + ")")
                 .attr("style", "cursor:pointer;")
-                //.call(d3.behavior.zoom().scaleExtent([1,8]).on("zoom",zoom));
-                //.call(d3.behavior.zoom().x(x).y(y).scaleExtent([1, 8]).on
                 .on("click", stopPropogation, false)
                 .call(d3.behavior.drag().on("dragstart", function () {
-                    // d3.event.sourceEvent.stopPropagation();
-                    /*         vis.transition()
-                             //duration of the animation of transition
-                                 .duration(0)
-                                 // delay time in ms
-                                 .delay(0)
-                                 .attr("transform", function (d) {
-                                     return "scale(" + toolSetService.getZoomScale() + ")";
-                                 });
-         */
                 }).on("drag", function () {
-                    console.log("dragged");
-                    // d3.event.sourceEvent.stopPropagation();
                 }))
-                .append("g").attr("width", 160).attr("height", 120).attr("class", "tree-holder")/*.call(d3.behavior.drag().on("dragstart", function () {
-             d3.event.sourceEvent.stopPropagation();
-             }).on("drag", function () {
-             console.log("dragged");
-             }))*/;
+                .append("g")
+                .attr("width", 160)
+                .attr("height", 120)
+                .attr("class", "tree-holder");
 
+            d3.selection.prototype.moveToFront = function(){
+                return this.each(function () {
+                    this.parentNode.appendChild(this);
+                });
+            };
 
             var tree = d3.layout.tree()
-            // .size([h, w])
                 .nodeSize([nodeBoundaries.width + nodeBoundaries.horizontalSeperation, nodeBoundaries.height + nodeBoundaries.verticalSeperation])
                 .separation(function separation(a, b) {
                     return a.parent == b.parent ? 1.25 : 1.5;
                 });
 
-            var line = d3.svg.line()
-
-                .x(function (d) {
-                    return xScale(d.x);
-                })
-                .y(function (d) {
-                    return yScale(d.y);
-                });
-
-            function fetchLineData() {
-                var source = {
-                    "x": d.source.x + (nodeBoundaries.width) / 2,
-                    "y": d.source.y + (nodeBoundaries.height + 10)
-                };
-                var target = {
-                    "x": d.target.x + (nodeBoundaries.width) / 2,
-                    "y": d.target.y - (attrs.imagepresent == 'true' ? 45 : 0)
-                };
-
-                var lineDataArray = [];
-                lineDataArray.push(source);
-                lineDataArray.push(target);
-
-                return lineDataArray;
-            }
 
             var diagonal = d3.svg.diagonal()
-            /*                .projection(function (d) {
-                                return [d.x + 120, d.y + 110];
-                            });*/
                 .source(function (d) {
                     return {
                         "x": d.source.x + (nodeBoundaries.width) / 2,
-                        /*"y": d.source.y + 150*/
-                        // "x": d.source.x,
                         "y": d.source.y + (nodeBoundaries.height + 10)
                     };
                 })
                 .target(function (d) {
                     return {
                         "x": d.target.x + (nodeBoundaries.width) / 2,
-                        /*"y": d.target.y*/
-                        // "x": d.target.x,
                         "y": d.target.y - (attrs.imagepresent == 'true' ? 45 : 0)
                     };
                 })
@@ -618,59 +537,14 @@
                         outOfGhostArea(node);
                     });
 
-                var nodeText = nodeEnter
-                    /*.append("svg:foreignObject")
-                    .attr("text-anchor", function (d) {
-                        return d.children || d._children ? "end" : "start";
-                    })
-                    .style("fill-opacity", 1e-6)
-                    .style("overflow", "visible")
-                    .attr({
-                        'width': nodeBoundaries.width,
-                        'height': nodeBoundaries.height,
-                        'class': 'foreign-object'
-                    })*/
-
-                    // .classed("of",function(){return true;})
-/*                    .attr('width', nodeBoundaries.width)
-                    .attr('height', nodeBoundaries.height)*/
-/*                    .append('xhtml:div')
-                    .classed("disabled", function (d) {
-                        return d.enable !== undefined && !d.enable;
-                    }).on("click", onClickedNode)*//*.call(d3.behavior.drag().on("dragstart", function () {
-                 d3.event.sourceEvent.stopPropagation();
-                 }).on("drag", function () {
-                 console.log("dragged");
-                 }))*/;
-
-                /*nodeText.append("div")
-                    .attr("ng-class","{'active-node':vm.isActive}")
-                    .attr("class","{{vm.nodeClass}}")
-                    .attr("ng-mouseenter","vm.whenMouseEnter()")
-                    .attr("ng-mouseleave","vm.whenMouseLeave()")
-                    .attr("ng-click","vm.makeNodeActive()")
-
-                    .append("div")
-                    .attr("layout","column")
-                    .attr("layout-align","center center")
-                    .attr("layout-align","center center")
-
-                    .append("div")
-                    .attr("ng-class","{'node-text-main-no-image':!vm.isImagePresent}")
-                    .attr("class","md-subhead node-text-main")*/
-
-                    // .append($compile('<div ng-class="{\'active-node\':vm.isActive}" class="{{vm.nodeClass}}" ng-mouseenter="vm.whenMouseEnter()" ng-mouseleave="vm.whenMouseLeave()" ng-click="vm.makeNodeActive()"> <div layout="column" layout-align="center center"> <div ng-class="{\'node-text-main-no-image\':!vm.imagepresent}" class="md-subhead node-text-main"><trim-word word-options ="vm.wordTrimOptions" word="d.name"></trim-word></div><div> <div class="round-chip-wrapper"><img ng-if="vm.imagepresent" ng-src="{{d.image_url}}" class="round-chip"> </div></div><div  ng-class="{\'node-text-sub-no-image\':!vm.imagepresent}" class="md-subhead node-text-sub">{{d.name}}</div><div layout-align="center center" layout-fill layout="row"> <div ng-repeat="action in vm.nodeActions"> <button ng-click="vm.makeCallBack(action.callBack); $event.stopPropagation();" class="action-btn"><span></span>&nbsp;<i class="{{action.icon}}"></i></button> </div></div></div></div>')(scope))
-
-
-
-                nodeText.append("tree-node").attr("node", function (d) {
+                nodeEnter.append("tree-node").attr("node", function (d) {
                     treeViewService.pushNode(d);
                     return "";
                 })
-                .on("click", onClickedNode)
-                .attr("nodeId", function (d) {
-                    return d.id;
-                }).attr("imagePresent", function (d) {
+                    .on("click", onClickedNode)
+                    .attr("nodeId", function (d) {
+                        return d.id;
+                    }).attr("imagePresent", function (d) {
                     return vm.imagepresent;
                 }).attr("isPinnedNode", "false").attr("nodeActions", attrs.nodeactions)
                     .each(function () {
@@ -683,21 +557,7 @@
                     .attr("transform", function (d) {
                         return "translate(" + d.x + "," + d.y + ")";
                     });
-                /*
-                                nodeUpdate.select("circle")
-                                    .attr("r", 4.5)
-                                    .style("fill", function (d) {
-                                        if (d.class === 'highlight-link') {
-                                            return '#ff4136';
-                                        } else if (d._children) {
-                                            return 'lightsteelblue';
-                                        } else {
-                                            return '#fff';
-                                        }
-                                    });
 
-                                nodeUpdate.select("text")
-                                    .style("fill-opacity", 1);*/
 
                 // Transition exiting ndoes to the parent's new position.
                 var nodeExit = node.exit().transition()
@@ -732,54 +592,22 @@
                             target: o
                         });
                     })
+
                     .transition()
                     .duration(duration)
                     .attr("d", generatePath);
-                /*                    .attr("d", function (d) {
-                                        return "M" + d.source.y + "," + d.source.x
-                                            + "C" + (d.target.y + 100) + "," + d.source.x
-                                            + " " + (d.target.y + 100) + "," + d.target.x
-                                            + " " + d.target.y + "," + d.target.x;
-                                    });*/
-
-                /*
-                                // Enter any Indirect links at hte parent's previous position
-                                link.each(function(d,i){
-                                    return (d.indirect)?true:false;
-                                }).enter().insert("svg:path", "g")
-                                    .attr("class", "link")
-                                    .style("stroke-dasharray",("3,3"))
-                                    .attr("d", function (d) {
-                                        var o = {
-                                            x: source.x0,
-                                            y: source.y0
-                                        };
-                                        return diagonal({
-                                            source: o,
-                                            target: o
-                                        });
-                                    })
-                                    .transition()
-                                    .duration(duration)
-                                    .attr("d", generatePath);
-                */
 
                 // Transition links to their new position.
                 link.transition()
+
                     .duration(duration)
                     .attr("d", generatePath)
-                    /*                    .attr("class",function (d) {
-                     return (d.target.class === "highlight-link")?"highlight-link-stroke-active":"highlight-link-stroke-inactive";
-                     });*/
                     .style("stroke", function (d) {
                         if (d.target.class === "highlight-link") {
+                            this.parentNode.appendChild(this);
                             return "#ff4136";
                         }
-                    }).style("z-index",function(d){
-                    if (d.target.class === "highlight-link") {
-                        return "2000";
-                    }
-                });
+                    });
 
                 // Transition exiting nodes to the parent's new position.
                 link.exit().transition()
@@ -806,7 +634,7 @@
                 treeViewService.setNodes(nodeList);
             }
 
-// Toggle children
+            // Toggle children
             function toggle(d) {
                 if (d.children) {
                     d._children = d.children;
@@ -822,23 +650,6 @@
                 node._children = null;
             }
 
-// zoom in / out
-//             function zoom(d) {
-//                 //vis.attr("transform", "transl3ate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-//                 var nodes = vis.selectAll("g.node");
-//                 nodes.attr("transform", transform);
-//
-//                 // Update the links...
-//                 var link = vis.selectAll("path.link");
-//                 link.attr("d", translate);
-//
-//                 // Enter any new links at hte parent's previous position
-//                 //link.attr("d", function(d) {
-//                 //      var o = {x: d.x0, y: d.y0};
-//                 //      return diagonal({source: o, target: o});
-//                 //    });
-//             }
-
             function determineNodeRelativeLocation(d) {
                 if (d.source.children.length > 1 && d.source.children[0] == d.target) {
                     return 'onleft';
@@ -850,70 +661,56 @@
             }
 
             function generatePath(d) {
-                /*
-                                    return "M"
-                                        + (d.source.x+(nodeBoundaries.width/2))
-                                        + ","
-                                        + (d.source.y+nodeBoundaries.height)
-                                        + "V"
-                                        + (d.source.y+nodeBoundaries.height+(nodeBoundaries.height/2))
-                                        + "H" + (d.target.x+((nodeBoundaries.width)/2)-8)
-                                        + " Q " + ((d.target.x+((nodeBoundaries.width)/2)-8) + 8) + "," + (d.source.y+nodeBoundaries.height+(nodeBoundaries.height/2))
-                                        + " " + ((d.target.x+((nodeBoundaries.width)/2)-8) + 8) + "," + (d.source.y+nodeBoundaries.height+(nodeBoundaries.height/2)+8)
-                                        // + " " + (((d.source.x - 8) - ((d.target.x - d.source.x) - 120)) - 8) + "," + (((d.source.y + 10) + 8) + 8)
-                                        + "V" + d.target.y
-                                        +"M"+d.target.x+","+d.target.y;
-                */
                 var relativeLocation = determineNodeRelativeLocation(d);
                 var pathString = '';
-
+                var extendingValue = (vm.imagepresent) ? 5 : 50;
                 switch (relativeLocation) {
                     case 'straight':
                         pathString += "M"
-                            + (d.source.x + (nodeBoundaries.width / 2)+12)
+                            + (d.source.x + (nodeBoundaries.width / 2) + 12)
                             + ","
-                            + (d.source.y + nodeBoundaries.height+55)
+                            + (d.source.y + nodeBoundaries.height + 57)
                             + "V"
-                            + (d.source.y + nodeBoundaries.height + (nodeBoundaries.height / 2)+35)
-                            + "H" + (d.target.x+12 + ((nodeBoundaries.width) / 2))
-                            + "V" + (d.target.y+50)
-                            + "M" + d.target.x+12 + "," + (d.target.y+50);
+                            + (d.source.y + nodeBoundaries.height + (nodeBoundaries.height / 2) + 35)
+                            + "H" + (d.target.x + 12 + ((nodeBoundaries.width) / 2))
+                            + "V" + (d.target.y + extendingValue)
+                            + "M" + d.target.x + 12 + "," + (d.target.y + extendingValue);
                         break;
                     case 'onleft':
                         pathString += "M"
-                            + (d.source.x + (nodeBoundaries.width / 2)+12)
+                            + (d.source.x + (nodeBoundaries.width / 2) + 12)
                             + ","
-                            + (d.source.y + nodeBoundaries.height+55)
+                            + (d.source.y + nodeBoundaries.height + 57)
                             + "V"
-                            + (d.source.y + nodeBoundaries.height + (nodeBoundaries.height / 2)+35)
-                            + "H" + (d.target.x+12 + ((nodeBoundaries.width) / 2) + 8)
-                            + " Q " + ((d.target.x+12 + ((nodeBoundaries.width) / 2) - 8) + 8) + "," + (d.source.y + nodeBoundaries.height + (nodeBoundaries.height / 2)+35)
-                            + " " + ((d.target.x+12 + ((nodeBoundaries.width) / 2) - 8) + 8) + "," + (d.source.y + nodeBoundaries.height + (nodeBoundaries.height / 2) + 8+35)
-                            + "V" + (d.target.y+50)
-                            + "M" + d.target.x+12 + "," + (d.target.y+50);
+                            + (d.source.y + nodeBoundaries.height + (nodeBoundaries.height / 2) + 35)
+                            + "H" + (d.target.x + 12 + ((nodeBoundaries.width) / 2) + 8)
+                            + " Q " + ((d.target.x + 12 + ((nodeBoundaries.width) / 2) - 8) + 8) + "," + (d.source.y + nodeBoundaries.height + (nodeBoundaries.height / 2) + 35)
+                            + " " + ((d.target.x + 12 + ((nodeBoundaries.width) / 2) - 8) + 8) + "," + (d.source.y + nodeBoundaries.height + (nodeBoundaries.height / 2) + 8 + 35)
+                            + "V" + (d.target.y + extendingValue)
+                            + "M" + d.target.x + 12 + "," + (d.target.y + extendingValue);
                         break;
                     case 'onright':
                         pathString += "M"
-                            + (d.source.x+12 + (nodeBoundaries.width / 2))
+                            + (d.source.x + 12 + (nodeBoundaries.width / 2))
                             + ","
-                            + (d.source.y + nodeBoundaries.height+55)
+                            + (d.source.y + nodeBoundaries.height + 57)
                             + "V"
-                            + (d.source.y + nodeBoundaries.height + (nodeBoundaries.height / 2)+35)
-                            + "H" + (d.target.x+12 + ((nodeBoundaries.width) / 2) - 8)
-                            + " Q " + ((d.target.x+12 + ((nodeBoundaries.width) / 2)) ) + "," + (d.source.y + nodeBoundaries.height + (nodeBoundaries.height / 2)+35)
-                            + " " + ((d.target.x+12 + ((nodeBoundaries.width) / 2))) + "," + (d.source.y + nodeBoundaries.height + (nodeBoundaries.height / 2) + 8+35)
-                            + "V" + (d.target.y+50)
-                            + "M" + d.target.x+12 + "," + (d.target.y+50);
+                            + (d.source.y + nodeBoundaries.height + (nodeBoundaries.height / 2) + 35)
+                            + "H" + (d.target.x + 12 + ((nodeBoundaries.width) / 2) - 8)
+                            + " Q " + ((d.target.x + 12 + ((nodeBoundaries.width) / 2)) ) + "," + (d.source.y + nodeBoundaries.height + (nodeBoundaries.height / 2) + 35)
+                            + " " + ((d.target.x + 12 + ((nodeBoundaries.width) / 2))) + "," + (d.source.y + nodeBoundaries.height + (nodeBoundaries.height / 2) + 8 + 35)
+                            + "V" + (d.target.y + extendingValue)
+                            + "M" + d.target.x + 12 + "," + (d.target.y + extendingValue);
                         break;
                 }
 
                 return pathString;
             }
 
-            function saveAsPDF(){
-                var  svg = document.getElementById("svg-box-container").innerHTML;
-                if (vis){
-                     svg = svg.replace(/\r?\n|\r/g, '').trim();
+            function saveAsPDF() {
+                var svg = document.getElementById("svg-box-container").innerHTML;
+                if (vis) {
+                    svg = svg.replace(/\r?\n|\r/g, '').trim();
                 }
 
 
@@ -931,37 +728,6 @@
                 var doc = new jsPDF('p', 'pt', 'a4');
                 doc.addImage(imgData, 'PNG', 40, 40, 75, 75);
                 doc.save('test.pdf');
-            }
-
-            $timeout(function () {
-                // saveAsPDF();
-            },300);
-            function transform(d) {
-                return "translate(" + x(d.y) + "," + y(d.x) + ")";
-            }
-
-            function translate(d) {
-                var sourceX = x(d.target.parent.y);
-                var sourceY = y(d.target.parent.x);
-                var targetX = x(d.target.y);
-                var targetY = (sourceX + targetX) / 2;
-                var linkTargetY = y(d.target.x0);
-                var result = "M" + sourceX + "," + sourceY + " C" + targetX + "," + sourceY + " " + targetY + "," + y(d.target.x0) + " " + targetX + "," + linkTargetY + "";
-                //console.log(result);
-
-                return result;
-            }
-
-
-            function onEditNode(d) {
-                var length = 9;
-                var id = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, length);
-                addChildNode(d.id, {
-                    "name": "new child node",
-                    "id": id,
-                    "type": "type2"
-                });
-                stopPropogation();
             }
 
             function onAddNode(parent, child) {
@@ -1029,14 +795,6 @@
                 // stopPropogation();
             }
 
-            function toggleEnable(d) {
-                d.enable = !d.enable;
-                var node = d3.select('#' + 'node-' + d.id + " .node-label")
-                    .classed("disabled", !d.enable);
-                stopPropogation();
-            }
-
-
             function stopPropogation() {
                 d3.event.stopPropagation();
             }
@@ -1051,10 +809,6 @@
                 if (isReset) {
                     return;
                 }
-
-                //TODO scale according to the bounds
-                // var bounds = d3.select(elem[0]).node().getBBox();
-                // var scale = Math.max(1, Math.min(8, 0.9 / Math.max(d.x , d.y )));
                 panToTheNode(node);
             }
 
@@ -1077,16 +831,12 @@
             function highlightLinks(path) {
 
                 angular.forEach(path, function (value, key) {
-
-                    //TODO assume that id of the root node is 1,.make this more consistent later
-                    // if (value.id !=='id1') {
                     value.class = 'highlight-link';
                     if (value._children) {
                         value.children = value._children;
                         value._children = null;
                     }
                     update(value);
-                    // }
                 })
             }
 
@@ -1149,7 +899,6 @@
             }
 
             function panToTheNode(node) {
-                // var scale = 1;//FIXME add scale to higher if need
                 var scale = toolSetService.getZoomScale();
                 var translate = [-scale * node.x, -scale * node.y];
                 console.log('node', node);
@@ -1160,20 +909,10 @@
             }
 
 
-            function zoomedWrapper() {
-                // g.style("stroke-width", 1.5 / d3.event.scale + "px");
-                vis.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-            }
-
             function reset() {
-                console.log("reset called");
+                console.log("Resetting Active nodes");
                 active.classed("active", false);
                 active = d3.select(null);
-
-                //TODO remove ASAP
-                /*                vis.transition()
-                                    .duration(750)
-                                    .call(zoomObject.translate([150, 100]).scale(1).event);*/
 
                 return true;
             }
@@ -1205,10 +944,6 @@
                     });
             }
 
-            nodeActiveClearListener = scope.$on('app:nodes:clearactive', onDeactivateNodes);
-            nodeDeleteListener = scope.$on('app:nodes:delete', onNodeDelete);
-            nodeAfterAddListener = scope.$on('app:nodes:add::after', onNodeAfterAdd);
-            nodeAfterUpdateListener = scope.$on('app:nodes:update::after', onNodeAfterUpdate);
 
             function onNodeAfterUpdate(ev, data) {
                 findIntheRootAndReplaceName(root.children, data.lastEditedNode);
@@ -1283,7 +1018,6 @@
                 view.y += center[1] - l[1];
 
                 interpolateZoom(zoom.translate(), view.k);
-                // zoomed();
             }
 
             function zoomed() {
@@ -1292,17 +1026,13 @@
                 vis.attr("transform",
                     "translate(" + zoom.translate() + ")" +
                     "scale(" + toolSetService.getZoomScale() + ")"
-                    // "scale(" + zoom.scale() + ")"
                 );
-                // zoomWithTween();
-            }
 
-            function zoomWithTween() {
-                vis.transition()
-                    .attr("transform", "translate(" + zoom.translate() + ")scale(" + toolSetService.getZoomScale() + ")");
-                /*                    .each("end", function () {
-                                        // interpolateZoom(zoom.translate(),zoom.scale());
-                                    });*/
+                vis.selectAll("g.parent")
+                    .attr("transform", function (d) {
+                        return "translate(" + d.x + "," + d.y + ")"
+                            + "scale(" + toolSetService.getZoomScale() + ")"
+                    });
             }
 
 
@@ -1321,14 +1051,13 @@
     }
 
     /*@ngInject*/
-    function TreeViewDirectiveController($rootScope, $scope, treeViewService) {
+    function TreeViewDirectiveController($scope) {
         var vm = this;
         vm.makeCallBack = makeCallBack;
 
         console.log(vm.searchableList);
 
         function makeCallBack(identifier, node) {
-            console.log('called treeview call back abn');
             $scope.vm[identifier]({node: node});
         }
 

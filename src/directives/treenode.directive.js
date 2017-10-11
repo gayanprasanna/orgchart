@@ -6,13 +6,12 @@
     angular.module('orgChart').directive('treeNode', treeNode);
 
     /*@ngInject*/
-    function treeNode(treeViewService, $timeout, $document,$rootScope) {
+    function treeNode(treeViewService, $document,$rootScope) {
 
         var cascadeTreeNodeDirective = {
             restrict: 'E',
             replace: true,
             templateNamespace:'svg',
-            // require:'^cascadeTreeView',
             controller: CascadeTreeNodeController,
             // templateUrl: 'app/cascade/test/orgchart/directives/treenode.tmpl.html',
             template: '<foreignObject width="260" height="220" style="overflow: visible"><div style="margin-top: 50px;margin-left:10px" ng-class="{\'active-node\':vm.isActive}" class="{{vm.nodeClass}}" ng-mouseenter="vm.whenMouseEnter()" ng-mouseleave="vm.whenMouseLeave()" ng-click="vm.makeNodeActive()"> <div layout="column" layout-align="center center"> <div ng-class="{\'node-text-main-no-image\':!vm.isImagePresent}" class="md-subhead node-text-main"><trim-word word-options ="vm.wordTrimOptions" word="vm.node.name"></trim-word></div><div> <div class="round-chip-wrapper"><img ng-if="vm.isImagePresent" ng-src="{{vm.node.image_url}}" class="round-chip"> </div></div><div  ng-class="{\'node-text-sub-no-image\':!vm.isImagePresent}" class="md-subhead node-text-sub">{{vm.node.name}}</div><div layout-align="center center" layout-fill layout="row"> <div ng-repeat="action in vm.nodeActions"> <button ng-click="vm.makeCallBack(action.callBack); $event.stopPropagation();" class="action-btn"><span></span>&nbsp;<i class="{{action.icon}}"></i></button> </div></div></div></div></foreignObject>',
@@ -45,12 +44,7 @@
                 toolTip: 'true',
                 toolTipDirection: 'top'
             };
-
-            /*console.log(angular.fromJson(attrs.node));
-            vm.node = angular.fromJson(attrs.node);*/
             vm.nodeClass = 'node-label node-' + vm.node.type+ ' node-'+vm.id;
-
-            // vm.isPinnedNode = true;
             vm.isExpandedView = false;
             vm.isActive = false;
 
@@ -60,9 +54,9 @@
             vm.makeCallBack = makeCallBack;
             vm.makeNodeActive = makeNodeActive;
             var nodeDOMElement = angular.element(elem.children()[0]);
-            /*            elem.on('click',function(){
-             elem.addClass('active-node');
-             });*/
+
+            $document.on('click', onDocumentClick);
+            scope.$on('$destroy', onDestroy);
 
             function makeNodeActive() {
                 clearAllOtherActiveNodes();
@@ -71,16 +65,10 @@
 
             function whenMouseEnter() {
                 console.log('mouse Entered');
-                // vm.isExpandedView = true;
-                // vm.isPinnedNode = true;
             }
 
             function whenMouseLeave() {
                 console.log('mouse leaved');
-                // vm.isExpandedView = false;
-                /*            $timeout(function(){
-                 vm.isPinnedNode = false;
-                 },1000);*/
             }
 
             function togglePinnedMode() {
@@ -94,14 +82,9 @@
             }
 
             function clearAllOtherActiveNodes(){
-/*                elem.find('.node-label');//TODO
-                elem.parent.getElementsByClassName('active-node');*/
                 $rootScope.$broadcast('app:nodes:clearactive',{'data': ''});
             }
 
-            function findRelevantNode(klass){
-                elem.find('.tree-holder');//TODO
-            }
             function onDocumentClick(ev) {
 
                 //Check if clicked outside and discard Active
@@ -118,17 +101,11 @@
             }
 
 
-            $document.on('click', onDocumentClick);
-            scope.$on('$destroy', onDestroy);
-
         }
     }
 
     /*@ngInject*/
-    function CascadeTreeNodeController(treeViewService) {
+    function CascadeTreeNodeController() {
         var vm = this;
-        /*        vm.node = treeViewService.findById(vm.nodeId);
-         vm.nodeClass = 'node-label node-'+vm.node.type;*/
-
     }
 })();
