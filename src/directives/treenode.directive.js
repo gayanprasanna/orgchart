@@ -14,12 +14,13 @@
             templateNamespace:'svg',
             controller: CascadeTreeNodeController,
             // templateUrl: 'app/cascade/test/orgchart/directives/treenode.tmpl.html',
-            template: '<foreignObject width="260" height="220" style="overflow: visible"><div style="margin-top: 50px;margin-left:10px" ng-class="{\'active-node\':vm.isActive}" class="{{vm.nodeClass}}" ng-mouseenter="vm.whenMouseEnter()" ng-mouseleave="vm.whenMouseLeave()" ng-click="vm.makeNodeActive()"> <div layout="column" layout-align="center center"> <div ng-class="{\'node-text-main-no-image\':!vm.isImagePresent}" class="md-subhead node-text-main"><trim-word word-options ="vm.wordTrimOptions" word="vm.node.name"></trim-word></div><div> <div class="round-chip-wrapper"><img ng-if="vm.isImagePresent" ng-src="{{vm.node.image_url}}" class="round-chip"> </div></div><div  ng-class="{\'node-text-sub-no-image\':!vm.isImagePresent}" class="md-subhead node-text-sub">{{vm.node.name}}</div><div layout-align="center center" layout-fill layout="row"> <div ng-repeat="action in vm.nodeActions"> <button ng-click="vm.makeCallBack(action.callBack); $event.stopPropagation();" class="action-btn"><span></span>&nbsp;<i class="{{action.icon}}"></i></button> </div></div></div></div></foreignObject>',
+            template: '<foreignObject width="260" height="220" style="overflow: visible"><div style="margin-top: 50px;margin-left:10px" class="{{vm.nodeClass}}" ng-mouseenter="vm.whenMouseEnter()" ng-mouseleave="vm.whenMouseLeave()" ng-click="vm.makeNodeActive()"> <div layout="column" layout-align="center center"> <div ng-class="{\'node-text-main-no-image\':!vm.isImagePresent}" class="md-subhead node-text-main"><trim-word word-options ="vm.wordTrimOptions" word="vm.node.name"></trim-word></div><div> <div class="round-chip-wrapper"><img ng-if="vm.isImagePresent" ng-src="{{vm.node.image_url}}" class="round-chip" id="img-chip"> </div></div><div  ng-class="{\'node-text-sub-no-image\':!vm.isImagePresent}" class="md-subhead node-text-sub">{{vm.node.name}}</div><div layout-align="center center" layout-fill layout="row"> <div ng-repeat="action in vm.nodeActions"> <button ng-click="vm.makeCallBack(action.callBack); $event.stopPropagation();" class="action-btn"><span></span>&nbsp;<i class="{{action.icon}}"></i></button> </div></div></div></div></foreignObject>',
             controllerAs: 'vm',
             scope: {},
             bindToController: {
                 nodeId: '@',
-                nodeActions: '@'
+                nodeActions: '@',
+                active:'='
             },
             link: {
                 pre:link

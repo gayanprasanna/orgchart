@@ -964,13 +964,13 @@
 
             function makeNodeActive(id) {
                 var nodeList = d3.selectAll(".node-" + id.toString());
-                angular.element(nodeList[0]).addClass('active-node');
+                angular.element(nodeList[0]).find("img").addClass('active-node');
             }
 
             function clearAllActiveNodes() {
                 var nodeList = d3.selectAll(".node-label");
                 angular.forEach(nodeList, function (v, k) {
-                    angular.element(v).removeClass('active-node');
+                    angular.element(v).find("img").removeClass('active-node');
                 });
             }
 
