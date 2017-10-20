@@ -14,13 +14,12 @@
             templateNamespace:'svg',
             controller: CascadeTreeNodeController,
             // templateUrl: 'app/cascade/test/orgchart/directives/treenode.tmpl.html',
-            template: '<foreignObject width="260" height="220" style="overflow: visible"><div style="margin-top: 50px;margin-left:10px" class="{{vm.nodeClass}}" ng-mouseenter="vm.whenMouseEnter()" ng-mouseleave="vm.whenMouseLeave()" ng-click="vm.makeNodeActive()"> <div layout="column" layout-align="center center"> <div ng-class="{\'node-text-main-no-image\':!vm.isImagePresent}" class="md-subhead node-text-main"><trim-word word-options ="vm.wordTrimOptions" word="vm.node.name"></trim-word></div><div> <div class="round-chip-wrapper"><img ng-if="vm.isImagePresent" ng-src="{{vm.node.image_url}}" class="round-chip" id="img-chip"> </div></div><div  ng-class="{\'node-text-sub-no-image\':!vm.isImagePresent}" class="md-subhead node-text-sub">{{vm.node.name}}</div><div layout-align="center center" layout-fill layout="row"> <div ng-repeat="action in vm.nodeActions"> <button ng-click="vm.makeCallBack(action.callBack); $event.stopPropagation();" class="action-btn"><span></span>&nbsp;<i class="{{action.icon}}"></i></button> </div></div></div></div></foreignObject>',
+            template: '<foreignObject width="260" height="220" style="overflow: visible"><div style="margin-top: 50px;margin-left:10px" class="{{vm.nodeClass}}" ng-mouseenter="vm.whenMouseEnter()" ng-mouseleave="vm.whenMouseLeave()" ng-click="vm.makeNodeActive()"> <div layout="column" layout-align="center center"> <div ng-class="{\'node-text-main-no-image\':!vm.isImagePresent}" class="md-subhead node-text-main"><trim-word word-options ="vm.wordTrimOptions" word="vm.getDisplayName(0)"></trim-word></div><div> <div class="round-chip-wrapper"><img ng-if="vm.isImagePresent" ng-src="{{vm.node.image_url}}" class="round-chip" id="img-chip"> </div></div><div  ng-class="{\'node-text-sub-no-image\':!vm.isImagePresent}" class="md-subhead node-text-sub">{{vm.getDisplayName(1)}}</div><div  ng-class="{\'node-text-sub-no-image\':!vm.isImagePresent}" ng-if="!vm.isActionBarPresent" class="md-subhead node-text-sub">Sample Text</div><div layout-align="center center" layout-fill layout="row" ng-if="vm.isActionBarPresent"> <div ng-repeat="action in vm.nodeActions"> <button ng-click="vm.makeCallBack(action.callBack); $event.stopPropagation();" class="action-btn"><span></span>&nbsp;<i class="{{action.icon}}"></i></button> </div></div></div></div></foreignObject>',
             controllerAs: 'vm',
             scope: {},
             bindToController: {
                 nodeId: '@',
-                nodeActions: '@',
-                active:'='
+                nodeActions: '@'
             },
             link: {
                 pre:link
@@ -33,6 +32,8 @@
         function link(scope, elem, attrs, vm) {
             console.log(attrs.imagepresent);
             vm.isImagePresent = attrs.imagepresent=='true'?true:false;
+            vm.isActionBarPresent = attrs.actionbarpresent=='true'?true:false;
+            vm.nodeDisplayProps = attrs.nodedisplayprops.split(",");
             vm.id = attrs.nodeid;
             vm.nodeActions = angular.fromJson(attrs.nodeactions);
             console.log(vm.nodeActions);
@@ -54,11 +55,16 @@
             vm.togglePinnedMode = togglePinnedMode;
             vm.makeCallBack = makeCallBack;
             vm.makeNodeActive = makeNodeActive;
+            vm.getDisplayName = getDisplayName;
             var nodeDOMElement = angular.element(elem.children()[0]);
 
             $document.on('click', onDocumentClick);
             scope.$on('$destroy', onDestroy);
 
+            function getDisplayName(index) {
+
+                return vm.node[vm.nodeDisplayProps[index]];
+            }
             function makeNodeActive() {
                 clearAllOtherActiveNodes();
                 vm.isActive = true;

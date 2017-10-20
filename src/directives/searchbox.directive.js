@@ -24,13 +24,13 @@
             link: link
         };
 
-        return directive;
-        function link() {
+
+        function link(scope,elem,attrs) {
 
         }
 
         /*@ngInject*/
-        function CascadeTreeSearchBoxController(treeViewService) {
+        function CascadeTreeSearchBoxController(treeViewService,$scope) {
 
             var vm = this;
             vm.simulateQuery = false;
@@ -44,8 +44,15 @@
 
             vm.newState = newState;
 
+            var nodeChangedListener = $scope.$on('app:nodes:changed', onChangedNodes);
+            $scope.$on('$destroy', destroyListener);
+
             function newState(state) {
                 alert("Sorry! You'll need to create a Constitution for " + state + " first!");
+            }
+
+            function onChangedNodes(event,data) {
+
             }
 
             // ******************************
@@ -85,18 +92,6 @@
             }
 
 
-
-            function extractNodes(listOfNodes) {
-
-                return listOfNodes.map(function (node) {
-                    return {
-                        value: node,
-                        display: node.name,
-                        displayLowerCase: node.name.toLowerCase()
-                    };
-                });
-            }
-
             /**
              * Create filter function for a query string
              */
@@ -109,7 +104,15 @@
 
             }
 
+
+
+            function destroyListener() {
+                nodeChangedListener();
+            }
+
         }
+
+        return directive;
     }
 
 

@@ -6,7 +6,7 @@
     angular.module('orgChart').directive('treeView', treeView);
 
     /*@ngInject*/
-    function treeView($filter, $compile, treeViewService, $timeout, toolSetService, $window) {
+    function treeView($filter, $compile,$rootScope, treeViewService, $timeout, toolSetService, $window) {
         var treeViewDirective = {
             replace: 'false',
             templateNamespace: 'svg',
@@ -18,10 +18,13 @@
                 del: '&',
                 add: '&',
                 edit: '&',
+                fetchSearchableList: '&',
                 nodeActions: '@',
                 treedata: '=',
                 searchableList: '=',
-                imagepresent: '='
+                imagePresent: '=',
+                actionBarPresent: '=',
+                nodeDisplayProps: '@'
             },
             controller: TreeViewDirectiveController,
             controllerAs: 'vm',
@@ -112,7 +115,6 @@
 
             function activateWatchers() {
                 onSearchWatch();
-                // onZoomWatch();
                 onExpandWatch();
             }
 
@@ -226,7 +228,8 @@
 
                     node.attr("transform", "translate(" + d.x0 + "," + d.y0 + ")");
                     updateTempConnector();
-                }).on("dragend", function (d) {
+                })
+                .on("dragend", function (d) {
                     if (d == root) {
                         return;
                     }
@@ -330,7 +333,7 @@
                 var data = [];
                 if (draggingNode !== null && selectedNode !== null) {
                     // have to flip the source coordinates since we did this for the existing connectors on the original tree
-                    var extendingValue = (vm.imagepresent) ? 5 : 50;
+                    var extendingValue = (vm.imagePresent) ? 5 : 50;
                     data = [{
                         source: {
                             x: selectedNode.x0 + 12 + (nodeBoundaries.width / 2),
@@ -369,10 +372,19 @@
                 d3.select(domNode).select('.ghost-area').attr('pointer-events', '');
                 updateTempConnector();
                 if (draggingNode !== null) {
+                    broadCastDragNDrop();
                     update(root);
                     panToTheNode(draggingNode);
                     draggingNode = null;
                 }
+            }
+
+            function broadCastDragNDrop() {
+                var reArrangedObject = {
+                    target: selectedNode,
+                    source: draggingNode
+                };
+                $rootScope.$broadcast('app:nodes:re-arranged', reArrangedObject);
             }
 
             onInit();
@@ -406,7 +418,7 @@
                 .attr("height", 120)
                 .attr("class", "tree-holder");
 
-            d3.selection.prototype.moveToFront = function(){
+            d3.selection.prototype.moveToFront = function () {
                 return this.each(function () {
                     this.parentNode.appendChild(this);
                 });
@@ -429,7 +441,7 @@
                 .target(function (d) {
                     return {
                         "x": d.target.x + (nodeBoundaries.width) / 2,
-                        "y": d.target.y - (attrs.imagepresent == 'true' ? 45 : 0)
+                        "y": d.target.y - (vm.imagePresent == 'true' ? 45 : 0)
                     };
                 })
                 .projection(function (d) {
@@ -545,7 +557,11 @@
                     .attr("nodeId", function (d) {
                         return d.id;
                     }).attr("imagePresent", function (d) {
-                    return vm.imagepresent;
+                    return vm.imagePresent;
+                }).attr("actionBarPresent", function (d) {
+                    return vm.actionBarPresent;
+                }).attr("nodeDisplayProps", function (d) {
+                    return vm.nodeDisplayProps;
                 }).attr("isPinnedNode", "false").attr("nodeActions", attrs.nodeactions)
                     .each(function () {
                         $compile(this)(scope);
@@ -645,11 +661,6 @@
                 }
             }
 
-            function expandNode(node) {
-                node.children = node._children;
-                node._children = null;
-            }
-
             function determineNodeRelativeLocation(d) {
                 if (d.source.children.length > 1 && d.source.children[0] == d.target) {
                     return 'onleft';
@@ -663,7 +674,7 @@
             function generatePath(d) {
                 var relativeLocation = determineNodeRelativeLocation(d);
                 var pathString = '';
-                var extendingValue = (vm.imagepresent) ? 5 : 50;
+                var extendingValue = (vm.imagePresent) ? 5 : 50;
                 switch (relativeLocation) {
                     case 'straight':
                         pathString += "M"
@@ -707,29 +718,6 @@
                 return pathString;
             }
 
-            function saveAsPDF() {
-                var svg = document.getElementById("svg-box-container").innerHTML;
-                if (vis) {
-                    svg = svg.replace(/\r?\n|\r/g, '').trim();
-                }
-
-
-                var canvas = document.createElement('canvas');
-                var context = canvas.getContext('2d');
-
-
-                context.clearRect(0, 0, canvas.width, canvas.height);
-                canvg(canvas, svg);
-
-
-                var imgData = canvas.toDataURL('image/png');
-
-                // Generate PDF
-                var doc = new jsPDF('p', 'pt', 'a4');
-                doc.addImage(imgData, 'PNG', 40, 40, 75, 75);
-                doc.save('test.pdf');
-            }
-
             function onAddNode(parent, child) {
                 var length = 9;
                 var id = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, length);
@@ -744,7 +732,12 @@
                 }
                 findIntheRootAndDestoroy(root.children, d);
                 update(d.parent);
-                stopPropogation();
+                /*         try{
+                             stopPropogation();
+                         }catch (e){
+                             console.error('propogation error');
+                         }*/
+
             }
 
             function findIntheRootAndDestoroy(list, node) {
@@ -793,6 +786,11 @@
                 update(nodeData);
 
                 // stopPropogation();
+            }
+
+            function onNodeChange() {
+                //$rootScope.$broadcast('app:nodes:changed', null);
+                vm.fetchSearchableList();
             }
 
             function stopPropogation() {
@@ -851,13 +849,6 @@
                 })
             }
 
-            function removeHighlight(node) {
-                if (node.class === 'highlight-link') {
-                    node.class = '';
-                }
-                return node;
-            }
-
             //search on tree for a link
             function searchWithinTree(node, searchKey, path) {
                 if (node.name === searchKey) { //if search is found return, add the object to the path and return it
@@ -908,7 +899,6 @@
                     .call(zoom.translate(translate).scale(scale).event);
             }
 
-
             function reset() {
                 console.log("Resetting Active nodes");
                 active.classed("active", false);
@@ -944,22 +934,22 @@
                     });
             }
 
-
             function onNodeAfterUpdate(ev, data) {
                 findIntheRootAndReplaceName(root.children, data.lastEditedNode);
-                update(data.lastEditedNode);
-                stopPropogation();
+                onNodeChange();
             }
 
             function onNodeAfterAdd(ev, data) {
                 var resolvedNode = getTreeNodeByID(data.parentNode.id);
                 onAddNode(resolvedNode, data.lastAddedNode);
+                onNodeChange();
             }
 
             function onNodeDelete(ev, data) {
                 console.log(data);
                 var resolvedNode = getTreeNodeByID(data.nodeID);
                 onRemoveNode(resolvedNode);
+                onNodeChange();
             }
 
             function makeNodeActive(id) {
